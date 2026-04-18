@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/issue.dart';
@@ -11,26 +12,14 @@ class FeedTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final issuesAsync = ref.watch(issuesProvider);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          'Community Feed',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-        ),
-        centerTitle: false,
+    return issuesAsync.when(
+      data: (issues) => ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: issues.length,
+        itemBuilder: (context, index) => _IssueFeedCard(issue: issues[index]),
       ),
-      body: issuesAsync.when(
-        data: (issues) => ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: issues.length,
-          itemBuilder: (context, index) => _IssueFeedCard(issue: issues[index]),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
     );
   }
 }
@@ -41,6 +30,8 @@ class _IssueFeedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -48,7 +39,7 @@ class _IssueFeedCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -63,7 +54,7 @@ class _IssueFeedCard extends StatelessWidget {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
+                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
                   child: const Icon(Icons.person, color: AppTheme.primaryColor),
                 ),
                 const SizedBox(width: 12),
@@ -71,7 +62,10 @@ class _IssueFeedCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('Anonymous User', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text('2 hours ago', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 12)),
+                    Text(
+                      '2 hours ago', 
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 12)
+                    ),
                   ],
                 ),
                 const Spacer(),
@@ -93,11 +87,20 @@ class _IssueFeedCard extends StatelessWidget {
           // Image
           ClipRRect(
             borderRadius: BorderRadius.circular(0),
-            child: Image.network(
-              issue.imagePath,
+            child: SizedBox(
               width: double.infinity,
               height: 250,
-              fit: BoxFit.cover,
+              child: issue.isMock 
+                ? Image.network(
+                    issue.imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
+                  )
+                : Image.file(
+                    File(issue.imagePath),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
+                  ),
             ),
           ),
 
@@ -154,6 +157,20 @@ class _IssueFeedCard extends StatelessWidget {
         const SizedBox(width: 6),
         Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
       ],
+    );
+  }
+
+  Widget _imageErrorPlaceholder() {
+    return Container(
+      color: Colors.grey.withOpacity(0.1),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.broken_image_outlined, color: Colors.grey, size: 40),
+          SizedBox(height: 8),
+          Text('Image unavailable', style: TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
+      ),
     );
   }
 }
