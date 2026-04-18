@@ -29,6 +29,7 @@ class AppTheme {
         brightness: brightness,
         secondary: secondaryColor,
         surface: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        surfaceTint: Colors.transparent,
       ),
       textTheme: GoogleFonts.outfitTextTheme(
         isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
@@ -54,6 +55,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: isDark ? darkBackgroundColor : lightBackgroundColor,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: GoogleFonts.outfit(
           fontSize: 20, 
