@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_theme.dart';
 import 'map_tab.dart';
 import 'feed_tab.dart';
 import 'profile_tab.dart';
 import 'camera_screen.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> {
   int _currentIndex = 1; // Default to Home (Feed)
 
   final List<Widget> _tabs = [
@@ -21,11 +22,27 @@ class _MainScreenState extends State<MainScreen> {
     const ProfileTab(),
   ];
 
+  String _getTitle() {
+    switch (_currentIndex) {
+      case 0: return 'Map View';
+      case 1: return 'Community Feed';
+      case 2: return 'Profile';
+      default: return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
+      appBar: _currentIndex != 2 // Hide AppBar on profile as it has its own header logic
+        ? AppBar(
+            title: Text(_getTitle()),
+            backgroundColor: isDark ? Colors.black : Colors.white,
+            elevation: 0,
+          )
+        : null,
       body: IndexedStack(
         index: _currentIndex,
         children: _tabs,
