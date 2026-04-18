@@ -14,6 +14,7 @@ class ProfileTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userIssuesAsync = ref.watch(userIssuesProvider);
+    final themeMode = ref.watch(themeProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return CustomScrollView(
@@ -116,11 +117,11 @@ class ProfileTab extends ConsumerWidget {
                   'App Theme',
                   () => _showThemeSelector(context, ref, themeMode),
                   trailing: Text(
-                    themeMode.name.toUpperCase(),
+                    themeMode == ThemeMode.system ? 'System' : (themeMode == ThemeMode.dark ? 'Dark' : 'Light'),
                     style: TextStyle(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -152,36 +153,43 @@ class ProfileTab extends ConsumerWidget {
   }
 
   void _showThemeSelector(BuildContext context, WidgetRef ref, ThemeMode currentMode) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Theme'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        content: Column(
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _themeOption(context, ref, 'System Default', ThemeMode.system, currentMode),
-            _themeOption(context, ref, 'Light Mode', ThemeMode.light, currentMode),
-            _themeOption(context, ref, 'Dark Mode', ThemeMode.dark, currentMode),
+            const Text(
+              'Choose App Theme',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _themeOption(context, ref, 'System Default', Icons.brightness_auto, ThemeMode.system, currentMode),
+            _themeOption(context, ref, 'Light Mode', Icons.light_mode, ThemeMode.light, currentMode),
+            _themeOption(context, ref, 'Dark Mode', Icons.dark_mode, ThemeMode.dark, currentMode),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _themeOption(BuildContext context, WidgetRef ref, String title, ThemeMode mode, ThemeMode currentMode) {
+  Widget _themeOption(BuildContext context, WidgetRef ref, String title, IconData icon, ThemeMode mode, ThemeMode currentMode) {
     final isSelected = mode == currentMode;
     return ListTile(
-      title: Text(title),
-      leading: Radio<ThemeMode>(
-        value: mode,
-        groupValue: currentMode,
-        activeColor: AppTheme.primaryColor,
-        onChanged: (val) {
-          ref.read(themeProvider.notifier).setTheme(val!);
-          Navigator.pop(context);
-        },
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: isSelected ? AppTheme.primaryColor : null),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isSelected ? AppTheme.primaryColor : null,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
       ),
+      trailing: isSelected ? const Icon(Icons.check_circle, color: AppTheme.primaryColor) : null,
       onTap: () {
         ref.read(themeProvider.notifier).setTheme(mode);
         Navigator.pop(context);
@@ -190,6 +198,7 @@ class ProfileTab extends ConsumerWidget {
   }
 
   Widget _buildIssueCard(BuildContext context, Issue issue) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       padding: const EdgeInsets.all(12),
@@ -197,7 +206,7 @@ class ProfileTab extends ConsumerWidget {
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)
+          BoxShadow(color: Colors.black.withOpacity(isDark ? 0.2 : 0.05), blurRadius: 4)
         ],
       ),
       child: Row(
