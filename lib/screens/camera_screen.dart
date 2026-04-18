@@ -2,17 +2,17 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../main.dart'; // To access the global cameras list
+import '../main.dart';
 import 'preview_screen.dart';
 
-class HomeTab extends StatefulWidget {
-  const HomeTab({super.key});
+class CameraScreen extends StatefulWidget {
+  const CameraScreen({super.key});
 
   @override
-  State<HomeTab> createState() => _HomeTabState();
+  State<CameraScreen> createState() => _CameraScreenState();
 }
 
-class _HomeTabState extends State<HomeTab> {
+class _CameraScreenState extends State<CameraScreen> {
   CameraController? _controller;
   bool _isPermissionGranted = false;
   bool _isInitializing = true;
@@ -40,7 +40,7 @@ class _HomeTabState extends State<HomeTab> {
     }
 
     _controller = CameraController(
-      cameras.first, // Use back camera
+      cameras.first,
       ResolutionPreset.medium,
       enableAudio: false,
     );
@@ -69,7 +69,7 @@ class _HomeTabState extends State<HomeTab> {
       final XFile image = await _controller!.takePicture();
       if (!mounted) return;
 
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => PreviewScreen(imagePath: image.path),
@@ -82,6 +82,25 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: _buildBody(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: _isInitializing || !_isPermissionGranted || _controller == null || !_controller!.value.isInitialized
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: FloatingActionButton.large(
+                onPressed: _takePicture,
+                backgroundColor: Colors.white,
+                shape: const CircleBorder(),
+                child: const Icon(Icons.camera_alt, color: Colors.black, size: 36),
+              ),
+            ),
+    );
+  }
+
+  Widget _buildBody() {
     if (_isInitializing) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -96,55 +115,15 @@ class _HomeTabState extends State<HomeTab> {
 
     return Stack(
       children: [
-        // Camera Preview
-        Positioned.fill(
-          child: CameraPreview(_controller!),
-        ),
-
-        // Overlay & Capture Button
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 40),
-            child: GestureDetector(
-              onTap: _takePicture,
-              child: Container(
-                height: 80,
-                width: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 4),
-                  color: Colors.white.withOpacity(0.2),
-                ),
-                child: Center(
-                  child: Container(
-                    height: 60,
-                    width: 60,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        
-        // Guidance Text
-        const Positioned(
-          top: 60,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Text(
-              'Align the issue in frame',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                shadows: [Shadow(blurRadius: 10, color: Colors.black)],
-              ),
+        Positioned.fill(child: CameraPreview(_controller!)),
+        Positioned(
+          top: 40,
+          left: 20,
+          child: CircleAvatar(
+            backgroundColor: Colors.black45,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
             ),
           ),
         ),
@@ -154,25 +133,15 @@ class _HomeTabState extends State<HomeTab> {
 
   Widget _buildPermissionDenied() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.camera_alt, size: 64, color: Colors.white),
-            const SizedBox(height: 16),
-            const Text(
-              'Camera access is required to report issues.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _checkPermissions,
-              child: const Text('Grant Access'),
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.camera_alt, size: 64, color: Colors.white),
+          const SizedBox(height: 16),
+          const Text('Camera access required.', style: TextStyle(color: Colors.white)),
+          const SizedBox(height: 24),
+          ElevatedButton(onPressed: _checkPermissions, child: const Text('Grant Access')),
+        ],
       ),
     );
   }
@@ -184,15 +153,11 @@ class _HomeTabState extends State<HomeTab> {
         children: [
           const Icon(Icons.no_photography_outlined, size: 64, color: Colors.white),
           const SizedBox(height: 16),
-          const Text(
-            'No camera found on this device or emulator.',
-            style: TextStyle(color: Colors.white),
-          ),
+          const Text('No camera found.', style: TextStyle(color: Colors.white)),
           const SizedBox(height: 24),
-          // Mock capture button for testing on emulators
           ElevatedButton(
             onPressed: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const PreviewScreen(
@@ -204,6 +169,7 @@ class _HomeTabState extends State<HomeTab> {
             },
             child: const Text('Use Mock Image (Demo)'),
           ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Go Back')),
         ],
       ),
     );

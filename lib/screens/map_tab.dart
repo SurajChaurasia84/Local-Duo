@@ -13,9 +13,8 @@ class MapTab extends StatelessWidget {
       builder: (context) => Container(
         height: 450,
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
+          color: Theme.of(context).cardTheme.color,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -67,7 +66,7 @@ class MapTab extends StatelessWidget {
                       ),
                       Text(
                         'Reported 2h ago',
-                        style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4), fontSize: 12),
                       ),
                     ],
                   ),
@@ -79,11 +78,11 @@ class MapTab extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 16, color: Colors.white.withOpacity(0.4)),
+                      Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
                       const SizedBox(width: 4),
                       Text(
                         issue.location,
-                        style: TextStyle(color: Colors.white.withOpacity(0.4)),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
                       ),
                     ],
                   ),
@@ -98,16 +97,17 @@ class MapTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       children: [
         // Mock Map Background
         Positioned.fill(
           child: Container(
-            color: Colors.black12,
+            color: isDark ? Colors.black12 : Colors.grey.withOpacity(0.05),
             child: Opacity(
-              opacity: 0.3,
+              opacity: isDark ? 0.3 : 0.5,
               child: GridPaper(
-                color: Colors.white.withOpacity(0.1),
+                color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
                 divisions: 2,
                 subdivisions: 4,
               ),
@@ -247,20 +247,22 @@ class MapSearchOverlay extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10)
+        ],
       ),
       child: Row(
         children: [
-          Icon(Icons.search, color: Colors.white.withOpacity(0.4)),
+          Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
           const SizedBox(width: 12),
           Text(
             'Search in this area...',
-            style: TextStyle(color: Colors.white.withOpacity(0.4)),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
           ),
           const Spacer(),
-          Icon(Icons.tune, color: Colors.white.withOpacity(0.4)),
+          Icon(Icons.tune, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
         ],
       ),
     );

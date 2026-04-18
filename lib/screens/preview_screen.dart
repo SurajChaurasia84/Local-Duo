@@ -56,109 +56,104 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final submissionState = ref.watch(submitIssueProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      decoration: AppTheme.globalGradient,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: const Text('Review Report'),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image Preview Card
-              Container(
-                height: 250,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 10),
-                    )
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: widget.isMock 
-                    ? Image.network(widget.imagePath, fit: BoxFit.cover)
-                    : Image.file(File(widget.imagePath), fit: BoxFit.cover),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Report ID & Location
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _infoChip(Icons.tag, _reportId),
-                  _infoChip(Icons.location_on, 'London, UK'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Review Report'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Preview Card
+            Container(
+              height: 250,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 10),
+                  )
                 ],
               ),
-              const SizedBox(height: 32),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: widget.isMock 
+                  ? Image.network(widget.imagePath, fit: BoxFit.cover)
+                  : Image.file(File(widget.imagePath), fit: BoxFit.cover),
+              ),
+            ),
+            const SizedBox(height: 24),
 
-              // Category Selector
-              const Text(
-                'Select Category',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                children: IssueCategory.values.map((category) {
-                  final isSelected = _selectedCategory == category;
-                  return choiceChip(category, isSelected);
-                }).toList(),
-              ),
-              const SizedBox(height: 32),
+            // Report ID & Location
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoChip(Icons.tag, _reportId),
+                _infoChip(Icons.location_on, 'London, UK'),
+              ],
+            ),
+            const SizedBox(height: 32),
 
-              // Caption Field
-              const Text(
-                'Description',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _captionController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Describe the issue...',
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+            // Category Selector
+            const Text(
+              'Select Category',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              children: IssueCategory.values.map((category) {
+                final isSelected = _selectedCategory == category;
+                return choiceChip(category, isSelected);
+              }).toList(),
+            ),
+            const SizedBox(height: 32),
+
+            // Caption Field
+            const Text(
+              'Description',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _captionController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Describe the issue...',
+                filled: true,
+                fillColor: Theme.of(context).cardTheme.color,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
                 ),
+                hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
               ),
-              const SizedBox(height: 100), // Space for sticky button
-            ],
-          ),
+            ),
+            const SizedBox(height: 100), // Space for sticky button
+          ],
         ),
-        bottomSheet: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.4),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: ElevatedButton(
-            onPressed: submissionState.isLoading ? null : _submit,
-            child: submissionState.isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : const Text('SUBMIT REPORT'),
-          ),
+      ),
+      bottomSheet: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.black.withOpacity(0.4) : Colors.white.withOpacity(0.8),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: ElevatedButton(
+          onPressed: submissionState.isLoading ? null : _submit,
+          child: submissionState.isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : const Text('SUBMIT REPORT'),
         ),
       ),
     );
@@ -168,14 +163,14 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: Colors.white70),
+          Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13)),
         ],
       ),
     );
@@ -188,10 +183,10 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       onSelected: (val) {
         setState(() => _selectedCategory = category);
       },
-      backgroundColor: Colors.white.withOpacity(0.05),
+      backgroundColor: Theme.of(context).cardTheme.color,
       selectedColor: AppTheme.primaryColor,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.white70,
+        color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
