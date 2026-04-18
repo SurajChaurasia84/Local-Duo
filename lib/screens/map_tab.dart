@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/issue.dart';
 import '../theme/app_theme.dart';
@@ -39,7 +40,9 @@ class MapTab extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 image: DecorationImage(
-                  image: NetworkImage(issue.imagePath),
+                  image: issue.isMock 
+                    ? NetworkImage(issue.imagePath) as ImageProvider
+                    : FileImage(File(issue.imagePath)),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -103,11 +106,11 @@ class MapTab extends StatelessWidget {
         // Mock Map Background
         Positioned.fill(
           child: Container(
-            color: isDark ? Colors.black12 : Colors.grey.withOpacity(0.05),
+            color: isDark ? Colors.black : Colors.white,
             child: Opacity(
-              opacity: isDark ? 0.3 : 0.5,
+              opacity: isDark ? 0.3 : 0.4,
               child: GridPaper(
-                color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
                 divisions: 2,
                 subdivisions: 4,
               ),
