@@ -120,7 +120,7 @@ class MapTab extends StatelessWidget {
 
         // Map UI elements
         const Positioned(
-          top: 60,
+          top: 10,
           left: 20,
           child: MapSearchOverlay(),
         ),
