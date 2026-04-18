@@ -14,7 +14,7 @@ class FeedTab extends ConsumerWidget {
 
     return issuesAsync.when(
       data: (issues) => ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.zero,
         itemCount: issues.length,
         itemBuilder: (context, index) => _IssueFeedCard(issue: issues[index]),
       ),
@@ -30,25 +30,10 @@ class _IssueFeedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -145,9 +130,9 @@ class _IssueFeedCard extends StatelessWidget {
               ],
             ),
           ),
+          // const SizedBox(height: 24),
         ],
-      ),
-    );
+      );
   }
 
   Widget _actionButton(BuildContext context, IconData icon, String label) {
