@@ -43,7 +43,24 @@
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.894245854280-feiipvk04fljhm6qj1hp1q9svgk1a84l</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Jan Report needs camera access to take photos of issues.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Jan Report needs location access to tag reports to your current area.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Jan Report needs location access to tag reports to your current area.</string>
 </dict>
 </plist>
