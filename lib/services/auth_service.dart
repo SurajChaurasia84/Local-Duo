@@ -15,6 +15,7 @@ class AuthService {
   
   final _storage = const FlutterSecureStorage();
   static const String _tokenKey = 'jwt_token';
+  static const String _userKey = 'user_data';
 
   Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
@@ -103,6 +104,24 @@ class AuthService {
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _storage.delete(key: _tokenKey);
+    await _storage.delete(key: _userKey);
+  }
+
+  Future<void> saveUser(Map<String, dynamic> user) async {
+    await _storage.write(key: _userKey, value: jsonEncode(user));
+  }
+
+  Future<Map<String, dynamic>?> getUser() async {
+    final userData = await _storage.read(key: _userKey);
+    if (userData != null) {
+      try {
+        return jsonDecode(userData) as Map<String, dynamic>;
+      } catch (e) {
+        debugPrint('Error parsing stored user data: $e');
+        return null;
+      }
+    }
+    return null;
   }
 
   Future<String?> getToken() async {

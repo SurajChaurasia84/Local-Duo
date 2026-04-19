@@ -37,8 +37,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _checkInitialStatus() async {
     final loggedIn = await _authService.isLoggedIn();
     if (loggedIn) {
-      // In a real app, you might want to fetch user profile here
-      state = state.copyWith(status: AuthStatus.authenticated);
+      final user = await _authService.getUser();
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      );
     } else {
       state = state.copyWith(status: AuthStatus.unauthenticated);
     }
@@ -49,6 +52,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final data = await _authService.signInWithGoogle();
       if (data != null) {
+        if (data['user'] != null) {
+          await _authService.saveUser(data['user']);
+        }
         state = state.copyWith(
           status: AuthStatus.authenticated,
           user: data['user'],
@@ -68,6 +74,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading, error: null);
     try {
       final data = await _authService.signIn(email, password);
+      if (data?['user'] != null) {
+        await _authService.saveUser(data!['user']);
+      }
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: data?['user'],
@@ -84,6 +93,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading, error: null);
     try {
       final data = await _authService.signUp(name, email, password);
+      if (data?['user'] != null) {
+        await _authService.saveUser(data!['user']);
+      }
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: data?['user'],

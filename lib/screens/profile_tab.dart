@@ -20,8 +20,8 @@ class ProfileTab extends ConsumerWidget {
     final user = authState.user;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final userName = user?['name'] ?? 'Jan User';
-    final userEmail = user?['email'] ?? 'user@janreport.com';
+    final userName = user?['name'] ?? 'User';
+    final userEmail = user?['email'] ?? '';
     final avatarUrl = user?['avatar_url'];
 
     return CustomScrollView(
