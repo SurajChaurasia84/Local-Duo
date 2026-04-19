@@ -59,7 +59,9 @@ class Issue {
     longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
     timestamp: json['created_at'] != null 
         ? DateTime.parse(json['created_at']) 
-        : (json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now()),
+        : (json['createdAt'] != null 
+            ? DateTime.parse(json['createdAt']) 
+            : (json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now())),
     userName: json['user_name'],
     userAvatar: json['user_avatar'],
   );
