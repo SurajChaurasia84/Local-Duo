@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../theme/app_theme.dart';
 import '../main.dart';
 import 'preview_screen.dart';
 
@@ -133,44 +134,112 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Widget _buildPermissionDenied() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.camera_alt, size: 64, color: Colors.white),
-          const SizedBox(height: 16),
-          const Text('Camera access required.', style: TextStyle(color: Colors.white)),
-          const SizedBox(height: 24),
-          ElevatedButton(onPressed: _checkPermissions, child: const Text('Grant Access')),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.camera_alt_rounded, size: 64, color: Colors.white),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Camera Access Required',
+              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'To report issues, you need to allow Jan Report to use your camera.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70, height: 1.5),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _checkPermissions,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text('GRANT ACCESS', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Go Back', style: TextStyle(color: Colors.white54)),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCameraFallback() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.no_photography_outlined, size: 64, color: Colors.white),
-          const SizedBox(height: 16),
-          const Text('No camera found.', style: TextStyle(color: Colors.white)),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PreviewScreen(
-                    imagePath: 'https://images.unsplash.com/photo-1542601906990-b4d3fb773b09?w=800',
-                    isMock: true,
-                  ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.no_photography_outlined, size: 64, color: Colors.white),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'No Camera Found',
+              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'We couldn\'t detect a camera on this device. You can use a demo image to test the reporting flow.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70, height: 1.5),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PreviewScreen(
+                        imagePath: 'https://images.unsplash.com/photo-1542601906990-b4d3fb773b09?w=800',
+                        isMock: true,
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-              );
-            },
-            child: const Text('Use Mock Image (Demo)'),
-          ),
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Go Back')),
-        ],
+                child: const Text('USE DEMO IMAGE', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Go Back', style: TextStyle(color: Colors.white54)),
+            ),
+          ],
+        ),
       ),
     );
   }
