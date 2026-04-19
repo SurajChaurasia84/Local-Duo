@@ -24,16 +24,67 @@ class PreviewScreen extends ConsumerStatefulWidget {
 class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   final TextEditingController _captionController = TextEditingController();
   IssueCategory _selectedCategory = IssueCategory.road;
-  final String _reportId = 'REP-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
-  
   Position? _currentPosition;
   String _currentAddress = 'Fetching location...';
   bool _isFetchingLocation = true;
+  String _reportId = 'FETCHING...';
 
   @override
   void initState() {
     super.initState();
     _fetchLocation();
+  }
+
+  String _getCityCode(String? city) {
+    if (city == null) return 'IND';
+    final name = city.trim().toUpperCase();
+    
+    // Comprehensive Indian City to Station Code Mapping
+    final Map<String, String> stationCodes = {
+      'DELHI': 'NDLS', 'NEW DELHI': 'NDLS', 'MUMBAI': 'CSTM', 'BOMBAY': 'CSTM',
+      'KOLKATA': 'HWH', 'CALCUTTA': 'HWH', 'CHENNAI': 'MAS', 'MADRAS': 'MAS',
+      'BANGALORE': 'SBC', 'BENGALURU': 'SBC', 'HYDERABAD': 'SC', 'SECUNDERABAD': 'SC',
+      'AHMEDABAD': 'ADI', 'PUNE': 'PUNE', 'JAIPUR': 'JP', 'LUCKNOW': 'LKO',
+      'GORAKHPUR': 'GKP', 'KANPUR': 'CNB', 'VARANASI': 'BSB', 'BANARAS': 'BSB',
+      'PATNA': 'PNBE', 'BHOPAL': 'BPL', 'INDORE': 'INDB', 'RAIPUR': 'R',
+      'RANCHI': 'RNC', 'BHUBANESWAR': 'BBS', 'GUWAHATI': 'GHY', 'CHANDIGARH': 'CDG',
+      'LUDHIANA': 'LDH', 'AMRITSAR': 'ASR', 'JALANDHAR': 'JUC', 'MEERUT': 'MTC',
+      'AGRA': 'AGC', 'GWALIOR': 'GWL', 'JABALPUR': 'JBP', 'NAGPUR': 'NGP',
+      'SURAT': 'ST', 'VADODARA': 'BRC', 'NASHIK': 'NK', 'AURANGABAD': 'AWB',
+      'GOA': 'MAO', 'KOCHI': 'ERS', 'TRIVANDRUM': 'TVC', 'COIMBATORE': 'CBE',
+      'MADURAI': 'MDU', 'VIJAYAWADA': 'BZA', 'VISAKHAPATNAM': 'VSKP', 'MYSORE': 'MYS',
+      'SHIMLA': 'SML', 'JAMMU': 'JAT', 'DEHRADUN': 'DDN', 'PRAYAGRAJ': 'PRYJ',
+      'ALLAHABAD': 'PRYJ', 'GAYA': 'GAYA', 'DHANBAD': 'DHN', 'JHANSI': 'VGLJ',
+    };
+
+    // Check the map for exact matches or partial matches
+    for (var entry in stationCodes.entries) {
+      if (name.contains(entry.key)) return entry.value;
+    }
+
+    // Fallback: Smart Station-Code Generation (Consonants)
+    // E.g., CHANDIGARH -> CHN, MUMBAI -> MMB
+    String code = name.replaceAll(RegExp(r'[AEIOU\s]'), '');
+    if (code.length >= 3) return code.substring(0, 3);
+    
+    return name.length >= 3 ? name.substring(0, 3) : 'IND';
+  }
+
+  String _generateRandomString(int length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return String.fromCharCodes(Iterable.generate(
+      length, (_) => chars.codeUnitAt(DateTime.now().microsecond % chars.length)));
+  }
+
+  // A more robust random string generator
+  String _generateSecureRandomString(int length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = DateTime.now().microsecondsSinceEpoch;
+    String result = '';
+    for (int i = 0; i < length; i++) {
+        result += chars[(random + i * 7) % chars.length];
+    }
+    return result;
   }
 
   Future<void> _fetchLocation() async {
@@ -46,6 +97,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         setState(() {
           _currentAddress = 'Location services disabled';
           _isFetchingLocation = false;
+          _reportId = 'IND-REP-ERROR';
         });
         return;
       }
@@ -57,6 +109,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           setState(() {
             _currentAddress = 'Permission denied';
             _isFetchingLocation = false;
+            _reportId = 'IND-REP-ERROR';
           });
           return;
         }
@@ -66,12 +119,16 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
       
       if (mounted) {
+        final p = placemarks.isNotEmpty ? placemarks.first : null;
+        final cityCode = _getCityCode(p?.locality);
+        final randomPart = _generateSecureRandomString(8);
+        
         setState(() {
           _currentPosition = position;
-          if (placemarks.isNotEmpty) {
-            final p = placemarks.first;
+          if (p != null) {
             _currentAddress = '${p.street}, ${p.subLocality}, ${p.locality}';
           }
+          _reportId = '${cityCode}REP$randomPart';
           _isFetchingLocation = false;
         });
       }
@@ -80,6 +137,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         setState(() {
           _currentAddress = 'Location error';
           _isFetchingLocation = false;
+          _reportId = 'IND-REP-ERROR';
         });
       }
     }
@@ -87,6 +145,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
 
   Future<void> _submit() async {
     final issue = Issue(
+      id: _reportId, // Use the custom generated ID
       category: _selectedCategory,
       caption: _captionController.text,
       imagePath: widget.imagePath,
@@ -121,9 +180,52 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     final submissionState = ref.watch(submitIssueProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Discard Report?'),
+            content: const Text('If you go back now, your report will be lost. Are you sure you want to discard it?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('CANCEL'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  'DISCARD', 
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldPop == true && context.mounted) {
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
-        title: const Text('Review Report'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Report ID', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              _reportId,
+              style: TextStyle(
+                fontSize: 13, 
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -153,19 +255,26 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Report ID & Location
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _infoChip(Icons.tag, _reportId),
-                _infoChip(
-                  Icons.location_on, 
-                  _currentAddress,
-                  isLoading: _isFetchingLocation,
+                const Text(
+                  'Incident Location',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: _isFetchingLocation ? null : _fetchLocation,
+                  borderRadius: BorderRadius.circular(12),
+                  child: _infoChip(
+                    Icons.location_on, 
+                    _currentAddress,
+                    isLoading: _isFetchingLocation,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
 
             // Category Selector
             const Text(
@@ -223,6 +332,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
               : const Text('SUBMIT REPORT'),
         ),
       ),
+    );
+      },
     );
   }
 
