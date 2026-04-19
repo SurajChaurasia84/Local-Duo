@@ -165,7 +165,7 @@ class _IssueFeedCard extends StatelessWidget {
 
           // Content
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4), // Reduced top and bottom padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -173,7 +173,7 @@ class _IssueFeedCard extends StatelessWidget {
                   issue.caption,
                   style: const TextStyle(fontSize: 16, height: 1.4),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8), // Reduced gap
                 Row(
                   children: [
                     Icon(Icons.location_on, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
@@ -190,7 +190,7 @@ class _IssueFeedCard extends StatelessWidget {
 
           // Actions
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), // Reduced from 8 to 4
             child: Row(
               children: [
                 _actionButton(context, Icons.thumb_up_alt_outlined, '0'),
@@ -204,7 +204,6 @@ class _IssueFeedCard extends StatelessWidget {
               ],
             ),
           ),
-          // const SizedBox(height: 24),
         ],
       );
   }
