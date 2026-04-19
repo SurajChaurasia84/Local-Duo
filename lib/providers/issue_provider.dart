@@ -14,13 +14,16 @@ final userIssuesProvider = FutureProvider<List<Issue>>((ref) async {
 
 class SubmitIssueNotifier extends StateNotifier<AsyncValue<void>> {
   final ApiService _apiService;
-  SubmitIssueNotifier(this._apiService) : super(const AsyncValue.data(null));
+  final Ref ref;
+  
+  SubmitIssueNotifier(this._apiService, this.ref) : super(const AsyncValue.data(null));
 
   Future<bool> submit(Issue issue) async {
     state = const AsyncValue.loading();
     try {
       final success = await _apiService.createIssue(issue);
       if (success) {
+        ref.invalidate(issuesProvider); // Refresh the feed
         state = const AsyncValue.data(null);
         return true;
       } else {
@@ -35,5 +38,5 @@ class SubmitIssueNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final submitIssueProvider = StateNotifierProvider<SubmitIssueNotifier, AsyncValue<void>>((ref) {
-  return SubmitIssueNotifier(ref.watch(apiServiceProvider));
+  return SubmitIssueNotifier(ref.watch(apiServiceProvider), ref);
 });
