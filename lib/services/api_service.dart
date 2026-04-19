@@ -6,7 +6,7 @@ import 'auth_service.dart';
 
 class ApiService {
   final AuthService _authService = AuthService();
-  static const String _baseUrl = 'http://10.0.2.2:5000/api';
+  static const String _baseUrl = 'http://localhost:5000/api';
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _authService.getToken();
@@ -66,6 +66,7 @@ class ApiService {
       }
 
       // Add Fields
+      request.fields['report_id'] = issue.id;
       request.fields['category'] = issue.category.name;
       request.fields['description'] = issue.caption;
       request.fields['latitude'] = issue.latitude.toString();
