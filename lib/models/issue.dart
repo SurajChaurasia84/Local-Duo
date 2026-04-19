@@ -52,7 +52,7 @@ class Issue {
   factory Issue.fromJson(Map<String, dynamic> json) => Issue(
     id: json['report_id'] ?? json['id'],
     category: IssueCategory.values.byName(json['category']),
-    caption: json['caption'] ?? '',
+    caption: json['caption'] ?? json['description'] ?? '',
     imagePath: json['image_url'] ?? json['imagePath'] ?? '',
     location: json['address'] ?? json['location'] ?? '',
     latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
