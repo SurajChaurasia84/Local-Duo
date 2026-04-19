@@ -1,46 +1,92 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import '../models/issue.dart';
+import 'auth_service.dart';
 
 class ApiService {
-  // Simulate network delay
-  Future<void> _delay() => Future.delayed(const Duration(seconds: 1));
+  final AuthService _authService = AuthService();
+  static const String _baseUrl = 'http://10.0.2.2:5000/api';
+
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await _authService.getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   Future<List<Issue>> getIssues() async {
-    await _delay();
-    // Return mock general issues
-    return [
-      Issue(
-        category: IssueCategory.garbage,
-        caption: 'Large waste buildup near the park entrance.',
-        imagePath: 'https://images.unsplash.com/photo-1542601906990-b4d3fb773b09?w=500',
-        location: 'Central Park North',
-        isMock: true,
-      ),
-      Issue(
-        category: IssueCategory.road,
-        caption: 'Significant pothole on the main crossing.',
-        imagePath: 'https://images.unsplash.com/photo-1594411124407-332997e3767c?w=500',
-        location: 'Broadway Street',
-        isMock: true,
-      ),
-    ];
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/issues'),
+        headers: await _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Issue.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load issues');
+      }
+    } catch (e) {
+      // Fallback or rethrow
+      rethrow;
+    }
   }
 
   Future<List<Issue>> getUserIssues() async {
-    await _delay();
-    return [
-      Issue(
-        category: IssueCategory.safety,
-        caption: 'Street light broken for three days.',
-        imagePath: 'https://images.unsplash.com/photo-1534349762230-e0cadf78f5db?w=500',
-        location: 'Oak Avenue',
-        isMock: true,
-      ),
-    ];
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/issues/user'),
+        headers: await _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Issue.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load user issues');
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<bool> createIssue(Issue issue) async {
-    await _delay();
-    // In a real app, we would send 'issue' to the backend
-    return true;
+    try {
+      final token = await _authService.getToken();
+      final uri = Uri.parse('$_baseUrl/issues/create');
+      
+      final request = http.MultipartRequest('POST', uri);
+      
+      // Add Headers
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      // Add Fields
+      request.fields['category'] = issue.category.name;
+      request.fields['description'] = issue.caption;
+      request.fields['latitude'] = issue.latitude.toString();
+      request.fields['longitude'] = issue.longitude.toString();
+      request.fields['address'] = issue.location;
+      request.fields['cityCode'] = 'GEN'; // Could be dynamic later
+
+      // Add Image File
+      final file = await http.MultipartFile.fromPath(
+        'image', 
+        issue.imagePath,
+      );
+      request.files.add(file);
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      return response.statusCode == 201;
+    } catch (e) {
+      debugPrint('ApiService.createIssue Error: $e');
+      return false;
+    }
   }
 }
