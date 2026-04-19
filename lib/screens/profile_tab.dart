@@ -5,8 +5,10 @@ import 'package:shimmer/shimmer.dart';
 import '../models/issue.dart';
 import '../providers/issue_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'privacy_policy_screen.dart';
+import 'signup_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -15,7 +17,13 @@ class ProfileTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userIssuesAsync = ref.watch(userIssuesProvider);
     final themeMode = ref.watch(themeProvider);
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final userName = user?['name'] ?? 'Jan User';
+    final userEmail = user?['email'] ?? 'user@janreport.com';
+    final avatarUrl = user?['avatar_url'];
 
     return CustomScrollView(
       slivers: [
@@ -28,6 +36,7 @@ class ProfileTab extends ConsumerWidget {
                 Container(
                   width: 80,
                   height: 80,
+                  clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
@@ -40,26 +49,34 @@ class ProfileTab extends ConsumerWidget {
                       )
                     ],
                   ),
-                  child: const Center(
-                    child: Text(
-                      'JD',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
+                  child: avatarUrl != null
+                      ? Image.network(avatarUrl, fit: BoxFit.cover)
+                      : Center(
+                          child: Text(
+                            userName.substring(0, 1).toUpperCase(),
+                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'John Doe',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      'johndoe@example.com',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        userEmail,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -140,7 +157,7 @@ class ProfileTab extends ConsumerWidget {
                   context,
                   Icons.logout,
                   'Logout',
-                  () {}, // UI Only
+                  () => ref.read(authProvider.notifier).logout(),
                   isDestructive: true,
                 ),
               ],
