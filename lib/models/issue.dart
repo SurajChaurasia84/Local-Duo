@@ -46,7 +46,7 @@ class Issue {
   };
 
   factory Issue.fromJson(Map<String, dynamic> json) => Issue(
-    id: json['id'],
+    id: json['report_id'] ?? json['id'],
     category: IssueCategory.values.byName(json['category']),
     caption: json['caption'] ?? '',
     imagePath: json['image_url'] ?? json['imagePath'] ?? '',
