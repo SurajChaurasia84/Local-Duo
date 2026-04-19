@@ -228,90 +228,72 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Preview Card
+            // Edge-to-Edge Image Preview
             Container(
-              height: 250,
               width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 10),
-                  )
+              child: widget.isMock 
+                ? Image.network(widget.imagePath, width: double.infinity, fit: BoxFit.fitWidth)
+                : Image.file(File(widget.imagePath), width: double.infinity, fit: BoxFit.fitWidth),
+            ),
+            
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: _isFetchingLocation ? null : _fetchLocation,
+                    borderRadius: BorderRadius.circular(12),
+                    child: _infoChip(
+                      Icons.location_on, 
+                      _currentAddress,
+                      isLoading: _isFetchingLocation,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Category Selector
+                  const Text(
+                    'Select Category',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    children: IssueCategory.values.map((category) {
+                      final isSelected = _selectedCategory == category;
+                      return choiceChip(category, isSelected);
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Caption Field
+                  const Text(
+                    'Description',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _captionController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: 'Describe the issue...',
+                      filled: true,
+                      fillColor: Theme.of(context).cardTheme.color,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                    ),
+                  ),
+                  const SizedBox(height: 100), // Space for sticky button
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: widget.isMock 
-                  ? Image.network(widget.imagePath, fit: BoxFit.cover)
-                  : Image.file(File(widget.imagePath), fit: BoxFit.cover),
-              ),
             ),
-            const SizedBox(height: 24),
-
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Incident Location',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                InkWell(
-                  onTap: _isFetchingLocation ? null : _fetchLocation,
-                  borderRadius: BorderRadius.circular(12),
-                  child: _infoChip(
-                    Icons.location_on, 
-                    _currentAddress,
-                    isLoading: _isFetchingLocation,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Category Selector
-            const Text(
-              'Select Category',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              children: IssueCategory.values.map((category) {
-                final isSelected = _selectedCategory == category;
-                return choiceChip(category, isSelected);
-              }).toList(),
-            ),
-            const SizedBox(height: 32),
-
-            // Caption Field
-            const Text(
-              'Description',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _captionController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Describe the issue...',
-                filled: true,
-                fillColor: Theme.of(context).cardTheme.color,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
-              ),
-            ),
-            const SizedBox(height: 100), // Space for sticky button
           ],
         ),
       ),
