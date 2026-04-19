@@ -164,7 +164,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      Navigator.pop(context);
+      // Return to Home (MainScreen)
+      Navigator.popUntil(context, (route) => route.isFirst);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
