@@ -20,6 +20,8 @@ class Issue {
   final double longitude;
   final DateTime timestamp;
   final bool isMock;
+  final String? userName;
+  final String? userAvatar;
 
   Issue({
     String? id,
@@ -31,6 +33,8 @@ class Issue {
     this.longitude = 0.0,
     DateTime? timestamp,
     this.isMock = false,
+    this.userName,
+    this.userAvatar,
   }) : id = id ?? 'REP-${const Uuid().v4().substring(0, 8).toUpperCase()}',
        timestamp = timestamp ?? DateTime.now();
 
@@ -56,5 +60,7 @@ class Issue {
     timestamp: json['created_at'] != null 
         ? DateTime.parse(json['created_at']) 
         : (json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now()),
+    userName: json['user_name'],
+    userAvatar: json['user_avatar'],
   );
 }

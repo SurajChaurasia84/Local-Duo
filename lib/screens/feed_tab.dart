@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../models/issue.dart';
 import '../providers/issue_provider.dart';
 import '../theme/app_theme.dart';
@@ -51,6 +52,21 @@ class FeedTab extends ConsumerWidget {
       error: (err, stack) => Center(child: Text('Error: $err')),
     );
   }
+
+  static String getTimeAgo(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inSeconds < 60) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      return DateFormat('MMM d, yyyy').format(timestamp);
+    }
+  }
 }
 
 class _IssueFeedCard extends StatelessWidget {
@@ -69,15 +85,21 @@ class _IssueFeedCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                  child: const Icon(Icons.person, color: AppTheme.primaryColor),
+                  backgroundImage: issue.userAvatar != null ? NetworkImage(issue.userAvatar!) : null,
+                  child: issue.userAvatar == null 
+                    ? const Icon(Icons.person, color: AppTheme.primaryColor)
+                    : null,
                 ),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Anonymous User', style: TextStyle(fontWeight: FontWeight.bold)),
                     Text(
-                      '2 hours ago', 
+                      issue.userName ?? 'Anonymous User', 
+                      style: const TextStyle(fontWeight: FontWeight.bold)
+                    ),
+                    Text(
+                      FeedTab.getTimeAgo(issue.timestamp), 
                       style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 12)
                     ),
                   ],
@@ -89,9 +111,9 @@ class _IssueFeedCard extends StatelessWidget {
                     color: AppTheme.primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    'URGENT',
-                    style: TextStyle(color: AppTheme.primaryColor, fontSize: 11, fontWeight: FontWeight.bold),
+                  child: Text(
+                    issue.category.label.toUpperCase(),
+                    style: const TextStyle(color: AppTheme.primaryColor, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -104,7 +126,7 @@ class _IssueFeedCard extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               height: 250,
-              child: issue.isMock 
+              child: (issue.isMock || issue.imagePath.startsWith('http'))
                 ? Image.network(
                     issue.imagePath,
                     fit: BoxFit.cover,
@@ -148,9 +170,9 @@ class _IssueFeedCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                _actionButton(context, Icons.thumb_up_alt_outlined, '24'),
+                _actionButton(context, Icons.thumb_up_alt_outlined, '0'),
                 const SizedBox(width: 20),
-                _actionButton(context, Icons.comment_outlined, '5'),
+                _actionButton(context, Icons.comment_outlined, '0'),
                 const Spacer(),
                 IconButton(
                   icon: Icon(Icons.share_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
