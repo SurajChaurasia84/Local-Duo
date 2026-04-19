@@ -8,7 +8,6 @@ import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'privacy_policy_screen.dart';
-import 'signup_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
