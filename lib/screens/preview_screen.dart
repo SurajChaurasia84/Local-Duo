@@ -332,8 +332,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
               : const Text('SUBMIT REPORT'),
         ),
       ),
-    );
-      },
+      ),
     );
   }
 
