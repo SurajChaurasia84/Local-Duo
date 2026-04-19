@@ -17,47 +17,61 @@ class FeedTab extends ConsumerWidget {
       onRefresh: () => ref.refresh(issuesProvider.future),
       child: issuesAsync.when(
         data: (issues) {
-          if (issues.isEmpty) {
-            return ListView( // ListView is required for RefreshIndicator to work on empty states
-              children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.feed_outlined, size: 64, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2)),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Nothing to show here',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Be the first to report an issue!',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }
           return ListView.builder(
             padding: EdgeInsets.zero,
-            itemCount: issues.length,
-            itemBuilder: (context, index) => _IssueFeedCard(issue: issues[index]),
+            itemCount: issues.length + 1, // +1 for the filter bar
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return _buildFilterBar(context, ref);
+              }
+              
+              final issue = issues[index - 1];
+              return _IssueFeedCard(issue: issue);
+            },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
       ),
+    );
+  }
+
+  Widget _buildFilterBar(BuildContext context, WidgetRef ref) {
+    final activeFilter = ref.watch(issueFilterProvider);
+    
+    return Container(
+      height: 50,
+      width: double.infinity,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        children: [
+          _filterChip(context, ref, 'All', IssueFilter.all, activeFilter == IssueFilter.all),
+          const SizedBox(width: 8),
+          _filterChip(context, ref, 'Recent', IssueFilter.recent, activeFilter == IssueFilter.recent),
+          const SizedBox(width: 8),
+          _filterChip(context, ref, 'Nearby', IssueFilter.nearby, activeFilter == IssueFilter.nearby),
+          const SizedBox(width: 8),
+          _filterChip(context, ref, 'Most Liked', IssueFilter.mostLiked, activeFilter == IssueFilter.mostLiked),
+        ],
+      ),
+    );
+  }
+
+  Widget _filterChip(BuildContext context, WidgetRef ref, String label, IssueFilter filter, bool isSelected) {
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        ref.read(issueFilterProvider.notifier).state = filter;
+      },
+      selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+      checkmarkColor: AppTheme.primaryColor,
+      labelStyle: TextStyle(
+        color: isSelected ? AppTheme.primaryColor : Colors.grey,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 

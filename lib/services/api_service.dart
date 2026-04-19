@@ -30,7 +30,24 @@ class ApiService {
         throw Exception('Failed to load issues');
       }
     } catch (e) {
-      // Fallback or rethrow
+      rethrow;
+    }
+  }
+
+  Future<List<Issue>> getNearbyIssues(double lat, double lng, {int radius = 10}) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/issues/nearby?lat=$lat&lng=$lng&radius=$radius'),
+        headers: await _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Issue.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load nearby issues');
+      }
+    } catch (e) {
       rethrow;
     }
   }

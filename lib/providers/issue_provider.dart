@@ -1,11 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/issue.dart';
 import '../services/api_service.dart';
+import 'package:geolocator/geolocator.dart';
+
+enum IssueFilter { all, recent, nearby, mostLiked }
+
+final issueFilterProvider = StateProvider<IssueFilter>((ref) => IssueFilter.all);
 
 final apiServiceProvider = Provider((ref) => ApiService());
 
 final issuesProvider = FutureProvider<List<Issue>>((ref) async {
-  return ref.watch(apiServiceProvider).getIssues();
+  final filter = ref.watch(issueFilterProvider);
+  final apiService = ref.watch(apiServiceProvider);
+
+  switch (filter) {
+    case IssueFilter.nearby:
+      // Get current location
+      final position = await Geolocator.getCurrentPosition();
+      return apiService.getNearbyIssues(position.latitude, position.longitude);
+    case IssueFilter.recent:
+    case IssueFilter.mostLiked:
+    case IssueFilter.all:
+    default:
+      return apiService.getIssues();
+  }
 });
 
 final userIssuesProvider = FutureProvider<List<Issue>>((ref) async {
