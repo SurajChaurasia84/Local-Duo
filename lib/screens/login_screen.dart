@@ -27,9 +27,7 @@ class LoginScreen extends ConsumerWidget {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
-                ),
+                color: Colors.white,
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primaryColor.withOpacity(0.3),
@@ -38,7 +36,15 @@ class LoginScreen extends ConsumerWidget {
                   )
                 ],
               ),
-              child: const Icon(Icons.report_gmailerrorred_rounded, size: 50, color: Colors.white),
+              child: ClipOval(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Image.asset(
+                    'assets/error.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 32),
             const Text(
@@ -49,7 +55,7 @@ class LoginScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                'Your voice matters. Report issues, drive change.',
+                'Made for the people, by the people.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 15),
               ),
