@@ -123,18 +123,19 @@ class _IssueFeedCard extends StatelessWidget {
           // Image
           ClipRRect(
             borderRadius: BorderRadius.circular(0),
-            child: SizedBox(
+            child: Container(
               width: double.infinity,
-              height: 250,
               child: (issue.isMock || issue.imagePath.startsWith('http'))
                 ? Image.network(
                     issue.imagePath,
-                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    fit: BoxFit.fitWidth,
                     errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
                   )
                 : Image.file(
                     File(issue.imagePath),
-                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    fit: BoxFit.fitWidth,
                     errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
                   ),
             ),
