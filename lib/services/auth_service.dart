@@ -5,10 +5,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
-  static const String _baseUrl = 'http://10.0.2.2:5000/api'; // Use 10.0.2.2 for Android Emulator
+  static const String _baseUrl = 'http://localhost:5000/api'; // Use localhost with 'adb reverse tcp:5000 tcp:5000' for physical devices over USB
   
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: '894245854280-feiipvk04fljhm6qj1hp1q9svgk1a84l.apps.googleusercontent.com',
+    // Using Web Client ID as more robust serverClientId for Android backend communication
+    serverClientId: '894245854280-eu8d5rlu93oseu5lkbbirrc54ui7fmvh.apps.googleusercontent.com',
     scopes: ['email', 'profile'],
   );
   
@@ -17,23 +18,30 @@ class AuthService {
 
   Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
-      // 1. Google Sign In
+      debugPrint('Step 1: Starting Google Sign In...');
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+      if (googleUser == null) {
+        debugPrint('Step 1: User cancelled Google Sign In');
+        return null;
+      }
+      debugPrint('Step 1: Google User: ${googleUser.email}');
 
-      // 2. Get ID Token
+      debugPrint('Step 2: Getting Authentication...');
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
+      
+      debugPrint('Step 2: idToken received: ${idToken != null}');
 
       if (idToken == null) throw Exception('Failed to get ID Token from Google');
 
-      // 3. Exchange for Backend JWT
+      debugPrint('Step 3: Sending to backend: $_baseUrl/auth/google-login');
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/google-login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'idToken': idToken}),
-      );
+      ).timeout(const Duration(seconds: 10));
 
+      debugPrint('Step 3: Backend responded with status: ${response.statusCode}');
       return _handleAuthResponse(response);
     } catch (e) {
       debugPrint('Google AuthService Error: $e');
