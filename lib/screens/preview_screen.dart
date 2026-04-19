@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../models/issue.dart';
 import '../providers/issue_provider.dart';
 import '../theme/app_theme.dart';
@@ -23,13 +25,74 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   final TextEditingController _captionController = TextEditingController();
   IssueCategory _selectedCategory = IssueCategory.road;
   final String _reportId = 'REP-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+  
+  Position? _currentPosition;
+  String _currentAddress = 'Fetching location...';
+  bool _isFetchingLocation = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocation();
+  }
+
+  Future<void> _fetchLocation() async {
+    try {
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() {
+          _currentAddress = 'Location services disabled';
+          _isFetchingLocation = false;
+        });
+        return;
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _currentAddress = 'Permission denied';
+            _isFetchingLocation = false;
+          });
+          return;
+        }
+      }
+
+      final position = await Geolocator.getCurrentPosition();
+      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      
+      if (mounted) {
+        setState(() {
+          _currentPosition = position;
+          if (placemarks.isNotEmpty) {
+            final p = placemarks.first;
+            _currentAddress = '${p.street}, ${p.subLocality}, ${p.locality}';
+          }
+          _isFetchingLocation = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _currentAddress = 'Location error';
+          _isFetchingLocation = false;
+        });
+      }
+    }
+  }
 
   Future<void> _submit() async {
     final issue = Issue(
       category: _selectedCategory,
       caption: _captionController.text,
       imagePath: widget.imagePath,
-      location: '221B Baker Street, London', // Mock location
+      location: _currentAddress,
+      latitude: _currentPosition?.latitude ?? 0.0,
+      longitude: _currentPosition?.longitude ?? 0.0,
     );
 
     final success = await ref.read(submitIssueProvider.notifier).submit(issue);
@@ -95,7 +158,11 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _infoChip(Icons.tag, _reportId),
-                _infoChip(Icons.location_on, 'London, UK'),
+                _infoChip(
+                  Icons.location_on, 
+                  _currentAddress,
+                  isLoading: _isFetchingLocation,
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -159,7 +226,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     );
   }
 
-  Widget _infoChip(IconData icon, String label) {
+  Widget _infoChip(IconData icon, String label, {bool isLoading = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -167,10 +234,25 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+          if (isLoading)
+            const SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
           const SizedBox(width: 8),
-          Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13)),
+          Flexible(
+            child: Text(
+              label, 
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13),
+            ),
+          ),
         ],
       ),
     );
