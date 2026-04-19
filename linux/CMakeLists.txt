@@ -4,10 +4,10 @@ project(runner LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "public_issue_reporting")
+set(BINARY_NAME "jan_report")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
-set(APPLICATION_ID "com.example.issueapp.public_issue_reporting")
+set(APPLICATION_ID "com.janreport.public.app")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

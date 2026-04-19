@@ -1,4 +1,4 @@
-package com.example.issueapp.public_issue_reporting
+package com.janreport.public.app
 
 import io.flutter.embedding.android.FlutterActivity
 
