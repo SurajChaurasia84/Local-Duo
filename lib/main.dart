@@ -1,49 +1,65 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'theme/app_theme.dart';
-import 'screens/main_screen.dart';
+import 'package:camera/camera.dart';
+import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
+import 'screens/login_screen.dart';
+import 'screens/main_screen.dart';
+import 'theme/app_theme.dart';
 
 List<CameraDescription> cameras = [];
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize SharedPreferences
-  final prefs = await SharedPreferences.getInstance();
-  
   try {
     cameras = await availableCameras();
   } catch (e) {
-    debugPrint('Error initializing cameras: $e');
+    debugPrint('Camera detection error: $e');
+    cameras = [];
   }
+  final prefs = await SharedPreferences.getInstance();
   
   runApp(
     ProviderScope(
       overrides: [
         sharedPrefsProvider.overrideWithValue(prefs),
       ],
-      child: const PublicIssueApp(),
+      child: const IssueApp(),
     ),
   );
 }
 
-class PublicIssueApp extends ConsumerWidget {
-  const PublicIssueApp({super.key});
+class IssueApp extends ConsumerWidget {
+  const IssueApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
+    final authState = ref.watch(authProvider);
 
     return MaterialApp(
-      title: 'Public Issue Reporting',
+      title: 'Jan Report',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
-      home: const MainScreen(),
+      home: _getHomeScreen(authState),
     );
+  }
+
+  Widget _getHomeScreen(AuthState authState) {
+    switch (authState.status) {
+      case AuthStatus.loading:
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor),
+          ),
+        );
+      case AuthStatus.authenticated:
+        return const MainScreen();
+      case AuthStatus.unauthenticated:
+        return const LoginScreen();
+    }
   }
 }
