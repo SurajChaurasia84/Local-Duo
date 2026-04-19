@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_theme.dart';
 import '../main.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'preview_screen.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:typed_data';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -42,7 +45,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
     _controller = CameraController(
       cameras.first,
-      ResolutionPreset.medium,
+      ResolutionPreset.max,
       enableAudio: false,
     );
 
@@ -70,10 +73,32 @@ class _CameraScreenState extends State<CameraScreen> {
       final XFile image = await _controller!.takePicture();
       if (!mounted) return;
 
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PreviewScreen(imagePath: image.path),
+          builder: (context) => ProImageEditor.file(
+            File(image.path),
+            callbacks: ProImageEditorCallbacks(
+              onImageEditingComplete: (Uint8List bytes) async {
+                final tempDir = await getTemporaryDirectory();
+                final editedFile = File('${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                await editedFile.writeAsBytes(bytes);
+                
+                if (!mounted) return;
+                
+                // Go to PreviewScreen with edited image
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PreviewScreen(imagePath: editedFile.path),
+                  ),
+                );
+              },
+            ),
+            configs: const ProImageEditorConfigs(
+              designMode: ImageEditorDesignMode.material,
+            ),
+          ),
         ),
       );
     } catch (e) {
@@ -116,7 +141,29 @@ class _CameraScreenState extends State<CameraScreen> {
 
     return Stack(
       children: [
-        Positioned.fill(child: CameraPreview(_controller!)),
+        Positioned.fill(
+          child: Container(
+            color: Colors.black,
+            child: Center(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = constraints.biggest;
+                  var scale = _controller!.value.aspectRatio * size.aspectRatio;
+
+                  // to prevent scaling down, use max(1, 1 / scale)
+                  if (scale < 1) scale = 1 / scale;
+
+                  return Transform.scale(
+                    scale: scale,
+                    child: Center(
+                      child: CameraPreview(_controller!),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
         Positioned(
           top: 40,
           left: 20,
