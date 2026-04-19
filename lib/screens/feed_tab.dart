@@ -13,43 +13,51 @@ class FeedTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final issuesAsync = ref.watch(issuesProvider);
 
-    return issuesAsync.when(
-      data: (issues) {
-        if (issues.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+    return RefreshIndicator(
+      onRefresh: () => ref.refresh(issuesProvider.future),
+      child: issuesAsync.when(
+        data: (issues) {
+          if (issues.isEmpty) {
+            return ListView( // ListView is required for RefreshIndicator to work on empty states
               children: [
-                Icon(Icons.feed_outlined, size: 64, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2)),
-                const SizedBox(height: 16),
-                Text(
-                  'Nothing to show here',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Be the first to report an issue!',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                    fontSize: 14,
+                SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.feed_outlined, size: 64, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2)),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nothing to show here',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Be the first to report an issue!',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
+            );
+          }
+          return ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: issues.length,
+            itemBuilder: (context, index) => _IssueFeedCard(issue: issues[index]),
           );
-        }
-        return ListView.builder(
-          padding: EdgeInsets.zero,
-          itemCount: issues.length,
-          itemBuilder: (context, index) => _IssueFeedCard(issue: issues[index]),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Error: $err')),
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+      ),
     );
   }
 
