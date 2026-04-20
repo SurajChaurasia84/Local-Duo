@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../models/issue.dart';
 import '../providers/issue_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/connectivity_error_widget.dart';
 
 class FeedTab extends ConsumerWidget {
   const FeedTab({super.key});
@@ -27,33 +28,10 @@ class FeedTab extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.cloud_off_outlined,
-                size: 100,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Something went wrong...',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Placeholder for contact action
-                },
-                child: const Text(
-                  'Contact Us',
-                  style: TextStyle(
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        error: (err, stack) => ConnectivityErrorWidget(
+          isServerDown: true,
+          message: 'Unable to reach Jan Report server. Showing saved reports if available.',
+          onRetry: () => ref.refresh(issuesProvider),
         ),
       ),
     );
@@ -109,13 +87,6 @@ class _IssueFeedCard extends StatelessWidget {
                       style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 12)
                     ),
                   ],
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: Icon(Icons.share_outlined, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
-                  onPressed: () {
-                    // Placeholder for share
-                  },
                 ),
               ],
             ),

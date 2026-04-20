@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'privacy_policy_screen.dart';
 import 'feed_tab.dart';
+import 'my_reports_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -83,34 +84,6 @@ class ProfileTab extends ConsumerWidget {
           ),
         ),
 
-        // User Issues Section
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Text(
-              'My Reports',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-
-        userIssuesAsync.when(
-          data: (issues) => SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => _buildIssueCard(context, issues[index]),
-              childCount: issues.length,
-            ),
-          ),
-          loading: () => SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => _buildSkeletonItem(context),
-              childCount: 3,
-            ),
-          ),
-          error: (err, stack) => const SliverToBoxAdapter(
-            child: Center(child: Text('Error loading issues')),
-          ),
-        ),
 
         // Settings Section
         SliverToBoxAdapter(
@@ -125,6 +98,16 @@ class ProfileTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 
+                _settingsTile(
+                  context,
+                  Icons.assignment_outlined,
+                  'My Reports',
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MyReportsScreen()),
+                  ),
+                ),
+
                 // Theme Selection
                 _settingsTile(
                   context,
@@ -214,77 +197,6 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildIssueCard(BuildContext context, Issue issue) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(isDark ? 0.2 : 0.05), blurRadius: 4)
-        ],
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: SizedBox(
-              width: 60,
-              height: 60,
-              child: issue.isMock
-                  ? Image.network(
-                      issue.imagePath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
-                    )
-                  : Image.file(
-                      File(issue.imagePath),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
-                    ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  issue.caption,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                Text(
-                  FeedTab.getTimeAgo(issue.timestamp),
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSkeletonItem(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Shimmer.fromColors(
-      baseColor: isDark ? Colors.white10 : Colors.black12,
-      highlightColor: isDark ? Colors.white24 : Colors.grey.shade200,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        height: 80,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    );
-  }
 
   Widget _settingsTile(
     BuildContext context, 
