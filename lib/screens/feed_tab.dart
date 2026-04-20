@@ -111,6 +111,12 @@ class _IssueFeedCard extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
+                IconButton(
+                  icon: Icon(Icons.share_outlined, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+                  onPressed: () {
+                    // Placeholder for share
+                  },
+                ),
               ],
             ),
           ),
@@ -160,35 +166,8 @@ class _IssueFeedCard extends StatelessWidget {
               ],
             ),
           ),
-
-          // Actions
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), // Reduced from 8 to 4
-            child: Row(
-              children: [
-                _actionButton(context, Icons.thumb_up_alt_outlined, '0'),
-                const SizedBox(width: 20),
-                _actionButton(context, Icons.comment_outlined, '0'),
-                const Spacer(),
-                IconButton(
-                  icon: Icon(Icons.share_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
         ],
       );
-  }
-
-  Widget _actionButton(BuildContext context, IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-        const SizedBox(width: 6),
-        Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
-      ],
-    );
   }
 
   Widget _imageErrorPlaceholder() {
