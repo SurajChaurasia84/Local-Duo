@@ -31,7 +31,34 @@ class FeedTab extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.cloud_off_outlined,
+                size: 100,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Something went wrong...',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Placeholder for contact action
+                },
+                child: const Text(
+                  'Contact Us',
+                  style: TextStyle(
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
