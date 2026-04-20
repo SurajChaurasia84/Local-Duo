@@ -108,58 +108,77 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return Scaffold(
-      appBar: _currentIndex != 1 // Hide AppBar on profile as it has its own header logic
-        ? AppBar(
-            title: Text(_getTitle()),
-            backgroundColor: isDark ? Colors.black : Colors.white,
-            elevation: 0,
-          )
-        : null,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _tabs,
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF121212) : Colors.white,
-          border: Border(
-            top: BorderSide(color: isDark ? Colors.white12 : Colors.black12, width: 0.5),
-          ),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: AppTheme.primaryColor,
-          unselectedItemColor: isDark ? Colors.white38 : Colors.black38,
-          showSelectedLabels: true,
-          showUnselectedLabels: false,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'You',
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: _currentIndex == 0 // Only show on Feed page
-          ? FloatingActionButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CameraScreen()),
-              ),
-              backgroundColor: AppTheme.primaryColor,
-              child: const Icon(Icons.camera_alt, color: Colors.white),
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          setState(() => _currentIndex = 0);
+        }
+      },
+      child: Scaffold(
+        appBar: _currentIndex != 1 // Hide AppBar on profile as it has its own header logic
+          ? AppBar(
+              title: Text(_getTitle()),
+              backgroundColor: isDark ? Colors.black : Colors.white,
+              elevation: 0,
             )
           : null,
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          switchInCurve: Curves.easeInOut,
+          switchOutCurve: Curves.easeInOut,
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          child: KeyedSubtree(
+            key: ValueKey<int>(_currentIndex),
+            child: _tabs[_currentIndex],
+          ),
+        ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF121212) : Colors.white,
+            border: Border(
+              top: BorderSide(color: isDark ? Colors.white12 : Colors.black12, width: 0.5),
+            ),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: AppTheme.primaryColor,
+            unselectedItemColor: isDark ? Colors.white38 : Colors.black38,
+            showSelectedLabels: true,
+            showUnselectedLabels: false,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'You',
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: _currentIndex == 0 // Only show on Feed page
+            ? FloatingActionButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CameraScreen()),
+                ),
+                backgroundColor: AppTheme.primaryColor,
+                child: const Icon(Icons.camera_alt, color: Colors.white),
+              )
+            : null,
+      ),
     );
   }
 }
