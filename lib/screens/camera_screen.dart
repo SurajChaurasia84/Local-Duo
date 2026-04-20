@@ -51,6 +51,10 @@ class _CameraScreenState extends State<CameraScreen> {
 
     try {
       await _controller!.initialize();
+      // Hard disable flash multiple times during init
+      await _controller!.setFlashMode(FlashMode.off);
+      await Future.delayed(const Duration(milliseconds: 100));
+      await _controller!.setFlashMode(FlashMode.off);
     } catch (e) {
       debugPrint('Camera init error: $e');
     }
@@ -70,7 +74,9 @@ class _CameraScreenState extends State<CameraScreen> {
     if (_controller == null || !_controller!.value.isInitialized) return;
 
     try {
-      final XFile image = await _controller!.takePicture();
+      // Final hard reset before capture to ensure NO flash fires
+      await _controller!.setFlashMode(FlashMode.off);
+      final XFile image = await _controller!.takePicture();     
       if (!mounted) return;
 
       Navigator.push(
@@ -111,18 +117,6 @@ class _CameraScreenState extends State<CameraScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: _buildBody(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _isInitializing || !_isPermissionGranted || _controller == null || !_controller!.value.isInitialized
-          ? null
-          : Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: FloatingActionButton.large(
-                onPressed: _takePicture,
-                backgroundColor: Colors.white,
-                shape: const CircleBorder(),
-                child: const Icon(Icons.camera_alt, color: Colors.black, size: 36),
-              ),
-            ),
     );
   }
 
@@ -162,6 +156,26 @@ class _CameraScreenState extends State<CameraScreen> {
               iconSize: 32,
               icon: const Icon(Icons.close, color: Colors.white),
               onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 40,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: GestureDetector(
+              onTap: _takePicture,
+              child: Container(
+                height: 80,
+                width: 80,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24, width: 4),
+                ),
+                child: const Icon(Icons.camera_alt, color: Colors.black, size: 32),
+              ),
             ),
           ),
         ),

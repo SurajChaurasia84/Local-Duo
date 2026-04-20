@@ -232,12 +232,30 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Edge-to-Edge Image Preview
-            Container(
-              width: double.infinity,
-              child: widget.isMock 
-                ? Image.network(widget.imagePath, width: double.infinity, fit: BoxFit.fitWidth)
-                : Image.file(File(widget.imagePath), width: double.infinity, fit: BoxFit.fitWidth),
+            // Small Centered 16:9 Preview
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Center(
+                child: Container(
+                  width: 180,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: widget.isMock 
+                      ? Image.network(widget.imagePath, width: 180, fit: BoxFit.contain)
+                      : Image.file(File(widget.imagePath), width: 180, fit: BoxFit.contain),
+                  ),
+                ),
+              ),
             ),
             
             Padding(
