@@ -123,20 +123,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               elevation: 0,
             )
           : null,
-        body: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
-          switchInCurve: Curves.easeInOut,
-          switchOutCurve: Curves.easeInOut,
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          child: KeyedSubtree(
-            key: ValueKey<int>(_currentIndex),
-            child: _tabs[_currentIndex],
-          ),
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _tabs,
         ),
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
