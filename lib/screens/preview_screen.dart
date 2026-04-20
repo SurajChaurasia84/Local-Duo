@@ -81,6 +81,12 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     return result;
   }
 
+  String _generateUniqueId(String cityCode) {
+    final randomPart = _generateSecureRandomString(10);
+    final timeSuffix = DateTime.now().microsecondsSinceEpoch.toRadixString(36).toUpperCase();
+    return '${cityCode}RP$randomPart$timeSuffix';
+  }
+
   Future<void> _fetchLocation() async {
     try {
       bool serviceEnabled;
@@ -90,9 +96,9 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       if (!serviceEnabled) {
         if (mounted) {
           setState(() {
-            _currentAddress = 'Location services disabled';
+            _currentAddress = 'Location Unavailable';
             _isFetchingLocation = false;
-            _reportId = 'IND-REP-ERROR';
+            _reportId = _generateUniqueId('IND');
           });
         }
         return;
@@ -104,9 +110,9 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         if (permission == LocationPermission.denied) {
           if (mounted) {
             setState(() {
-              _currentAddress = 'Permission denied';
+              _currentAddress = 'Location Permission Denied';
               _isFetchingLocation = false;
-              _reportId = 'IND-REP-ERROR';
+              _reportId = _generateUniqueId('IND');
             });
           }
           return;
@@ -119,14 +125,13 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       if (mounted) {
         final p = placemarks.isNotEmpty ? placemarks.first : null;
         final cityCode = _getCityCode(p?.locality);
-        final randomPart = _generateSecureRandomString(8);
         
         setState(() {
           _currentPosition = position;
           if (p != null) {
             _currentAddress = '${p.street}, ${p.subLocality}, ${p.locality}';
           }
-          _reportId = '${cityCode}REP$randomPart';
+          _reportId = _generateUniqueId(cityCode);
           _isFetchingLocation = false;
         });
       }
@@ -135,7 +140,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         setState(() {
           _currentAddress = 'Location error';
           _isFetchingLocation = false;
-          _reportId = 'IND-REP-ERROR';
+          _reportId = _generateUniqueId('IND');
         });
       }
     }
@@ -432,6 +437,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   }
 
   Widget choiceChip(dynamic category, bool isSelected) {
-    return Container(); // Placeholder as categories are removed
+    return Container(); 
   }
 }
