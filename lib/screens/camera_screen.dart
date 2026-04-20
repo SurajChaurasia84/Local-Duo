@@ -39,6 +39,15 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _initializeCamera() async {
+    // Lazy load cameras if not already available
+    if (cameras.isEmpty) {
+      try {
+        cameras = await availableCameras();
+      } catch (e) {
+        debugPrint('Camera detection error: $e');
+      }
+    }
+
     if (cameras.isEmpty) {
       setState(() => _isInitializing = false);
       return;
