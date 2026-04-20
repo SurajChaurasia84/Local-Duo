@@ -47,7 +47,7 @@ class ProfileTab extends ConsumerWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF4A00E0).withOpacity(0.3),
+                        color: const Color(0xFF4A00E0).withValues(alpha: 0.3),
                         blurRadius: 20,
                       )
                     ],
@@ -76,7 +76,7 @@ class ProfileTab extends ConsumerWidget {
                         userEmail,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
@@ -132,7 +132,9 @@ class ProfileTab extends ConsumerWidget {
                   context,
                   Icons.share_outlined,
                   'Share App',
-                  () => Share.share('Download Jan Report to report local issues! 🚀'),
+                  () => Share.share(
+                    'Hey! Check out Jan Report - An easy way to report community issues. \n\nDownload now: https://play.google.com/store/apps/details?id=com.janreport.community 🚀'
+                  ),
                 ),
 
                 _settingsTile(
@@ -142,13 +144,16 @@ class ProfileTab extends ConsumerWidget {
                   () async {
                     final Uri emailLaunchUri = Uri(
                       scheme: 'mailto',
-                      path: 'support@janreport.com',
+                      path: 'support.janreport@gmail.com',
                       queryParameters: {
                         'subject': 'Jan Report - Support Request',
                       },
                     );
                     if (await canLaunchUrl(emailLaunchUri)) {
-                      await launchUrl(emailLaunchUri);
+                      await launchUrl(
+                        emailLaunchUri,
+                        mode: LaunchMode.externalApplication,
+                      );
                     }
                   },
                 ),
@@ -235,7 +240,7 @@ class ProfileTab extends ConsumerWidget {
     return ListTile(
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: isDestructive ? Colors.redAccent : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+      leading: Icon(icon, color: isDestructive ? Colors.redAccent : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
       title: Text(
         title,
         style: TextStyle(
@@ -243,13 +248,13 @@ class ProfileTab extends ConsumerWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      trailing: trailing ?? Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2)),
+      trailing: trailing ?? Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2)),
     );
   }
 
   Widget _imageErrorPlaceholder() {
     return Container(
-      color: Colors.grey.withOpacity(0.1),
+      color: Colors.grey.withValues(alpha: 0.1),
       child: const Center(
         child: Icon(Icons.broken_image_outlined, color: Colors.grey, size: 20),
       ),
