@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/issue.dart';
 import 'auth_service.dart';
+import 'image_service.dart';
 
 class ApiService {
   final AuthService _authService = AuthService();
@@ -92,9 +93,12 @@ class ApiService {
       request.fields['cityCode'] = 'GEN'; // Could be dynamic later
 
       // Add Image File
-      final file = await http.MultipartFile.fromPath(
-        'image', 
-        issue.imagePath,
+      final compressedBytes = await ImageService.compressToTarget(issue.imagePath);
+      
+      final file = http.MultipartFile.fromBytes(
+        'image',
+        compressedBytes,
+        filename: 'report_image.jpg',
       );
       request.files.add(file);
 
