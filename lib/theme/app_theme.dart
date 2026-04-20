@@ -64,6 +64,12 @@ class AppTheme {
         ),
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
     );
   }
 }
