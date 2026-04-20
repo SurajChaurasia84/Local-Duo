@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/issue.dart';
 import '../providers/issue_provider.dart';
 import 'feed_tab.dart';
+import 'image_preview_screen.dart';
 import '../widgets/connectivity_error_widget.dart';
 
 class MyReportsScreen extends ConsumerWidget {
@@ -32,25 +33,45 @@ class MyReportsScreen extends ConsumerWidget {
     if (confirmed == true) {
       if (!context.mounted) return;
       
-      // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Deleting report...'), duration: Duration(seconds: 1)),
+      // Show non-dismissible loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          content: Row(
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              const Text("Deleting report..."),
+            ],
+          ),
+        ),
       );
 
-      final success = await ref.read(apiServiceProvider).deleteIssue(issueId);
+      try {
+        final success = await ref.read(apiServiceProvider).deleteIssue(issueId);
 
-      if (!context.mounted) return;
+        if (!context.mounted) return;
+        Navigator.pop(context); // Close the loading dialog
 
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Report deleted successfully')),
-        );
-        ref.invalidate(userIssuesProvider);
-        ref.invalidate(issuesProvider); // Also refresh main feed
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to delete report. Please try again.')),
-        );
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Report deleted successfully')),
+          );
+          ref.invalidate(userIssuesProvider);
+          ref.invalidate(issuesProvider); // Also refresh main feed
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to delete report. Please try again.')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context); // Close dialog on error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
       }
     }
   }
@@ -119,22 +140,38 @@ class MyReportsScreen extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: SizedBox(
-              width: 60,
-              height: 60,
-              child: issue.isMock
-                  ? Image.network(
-                      issue.imagePath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
-                    )
-                  : Image.file(
-                      File(issue.imagePath),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
-                    ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ImagePreviewScreen(
+                    imagePath: issue.imagePath,
+                    heroTag: 'report_img_${issue.id}',
+                  ),
+                ),
+              );
+            },
+            child: Hero(
+              tag: 'report_img_${issue.id}',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: (issue.isMock || issue.imagePath.startsWith('http'))
+                      ? Image.network(
+                          issue.imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
+                        )
+                      : Image.file(
+                          File(issue.imagePath),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _imageErrorPlaceholder(),
+                        ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 16),
