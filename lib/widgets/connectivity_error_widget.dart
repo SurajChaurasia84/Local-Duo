@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 
 class ConnectivityErrorWidget extends StatelessWidget {
@@ -15,12 +16,16 @@ class ConnectivityErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        alignment: Alignment.center,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -59,15 +64,35 @@ class ConnectivityErrorWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () async {
+              final Uri emailLaunchUri = Uri(
+                scheme: 'mailto',
+                path: 'support@janreport.com',
+                queryParameters: {
+                  'subject': 'Jan Report - Issue Report',
+                },
+              );
+              if (await canLaunchUrl(emailLaunchUri)) {
+                await launchUrl(emailLaunchUri);
+              }
+            },
+            child: const Text(
+              'Contact Support',
+              style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(height: 24),
           if (isServerDown)
             const Text(
               'Our engineers are already notified.',
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
-        ],
+            ],
+          ),
+        ),
       ),
-    ),
-  );
- }
+    );
+  }
 }
