@@ -60,7 +60,5 @@
 	<string>Jan Report needs camera access to take photos of issues.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Jan Report needs location access to tag reports to your current area.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Jan Report needs location access to tag reports to your current area.</string>
 </dict>
 </plist>

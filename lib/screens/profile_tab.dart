@@ -5,7 +5,7 @@ import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'privacy_policy_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'my_reports_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
@@ -157,10 +157,12 @@ class ProfileTab extends ConsumerWidget {
                   context,
                   Icons.privacy_tip_outlined,
                   'Privacy Policy',
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
-                  ),
+                  () async {
+                    final Uri url = Uri.parse('https://surajchaurasia84.github.io/Privacy-Policy/janreport.html');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    }
+                  },
                 ),
                 
                 _settingsTile(
@@ -174,7 +176,63 @@ class ProfileTab extends ConsumerWidget {
             ),
           ),
         ),
-        const SliverPadding(padding: EdgeInsets.only(bottom: 40)),
+        // Branding Footer
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 56),
+            child: Column(
+              children: [
+                Text(
+                  'Jan Report',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Made for the people, by the people.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Text(
+                        'Error: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 10, color: Colors.red.withValues(alpha: 0.5)),
+                      );
+                    }
+                    if (snapshot.hasData) {
+                      final version = snapshot.data!.version;
+                      final buildNumber = snapshot.data!.buildNumber;
+                      return Text(
+                        'Version $version ($buildNumber)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      );
+                    }
+                    return Text(
+                      'Syncing version...', 
+                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2)),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
