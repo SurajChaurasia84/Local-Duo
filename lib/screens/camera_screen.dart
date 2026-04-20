@@ -156,8 +156,10 @@ class _CameraScreenState extends State<CameraScreen> {
           top: 40,
           left: 20,
           child: CircleAvatar(
+            radius: 28,
             backgroundColor: Colors.black45,
             child: IconButton(
+              iconSize: 32,
               icon: const Icon(Icons.close, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
