@@ -199,7 +199,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
 
   Future<void> _submit() async {
     final String description = _captionController.text.trim().isEmpty 
-        ? 'No description provided.' 
+        ? 'No description' 
         : _captionController.text.trim();
 
     final issue = Issue(
