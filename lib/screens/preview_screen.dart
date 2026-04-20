@@ -9,6 +9,7 @@ import '../theme/app_theme.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
+import 'feed_tab.dart';
 
 class PreviewScreen extends ConsumerStatefulWidget {
   final String imagePath;
@@ -168,11 +169,43 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     );
   }
 
+  void _showFullScreenImage() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                child: widget.isMock 
+                  ? Image.network(_currentImagePath, fit: BoxFit.contain)
+                  : Image.file(File(_currentImagePath), fit: BoxFit.contain),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _submit() async {
+    final String description = _captionController.text.trim().isEmpty 
+        ? 'No description provided.' 
+        : _captionController.text.trim();
+
     final issue = Issue(
       id: _reportId, 
-      caption: _captionController.text,
-      imagePath: _currentImagePath, // Use edited path
+      caption: description,
+      imagePath: _currentImagePath, 
       location: _currentAddress,
       latitude: _currentPosition?.latitude ?? 0.0,
       longitude: _currentPosition?.longitude ?? 0.0,
@@ -274,9 +307,15 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                       borderRadius: BorderRadius.circular(16),
                       child: Stack(
                         children: [
-                          widget.isMock 
-                            ? Image.network(_currentImagePath, width: 180, fit: BoxFit.contain)
-                            : Image.file(File(_currentImagePath), width: 180, fit: BoxFit.contain),
+                          GestureDetector(
+                            onTap: _showFullScreenImage,
+                            child: Hero(
+                              tag: 'preview_image',
+                              child: widget.isMock 
+                                ? Image.network(_currentImagePath, width: 180, fit: BoxFit.contain)
+                                : Image.file(File(_currentImagePath), width: 180, fit: BoxFit.contain),
+                            ),
+                          ),
                           Positioned(
                             right: 8,
                             bottom: 8,
@@ -392,5 +431,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     );
   }
 
+  Widget choiceChip(dynamic category, bool isSelected) {
+    return Container(); // Placeholder as categories are removed
   }
-
+}
