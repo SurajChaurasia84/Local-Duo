@@ -20,6 +20,7 @@ class _CameraScreenState extends State<CameraScreen> {
   CameraController? _controller;
   bool _isPermissionGranted = false;
   bool _isInitializing = true;
+  bool _isCapturing = false;
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
     _controller = CameraController(
       cameras.first,
-      ResolutionPreset.max,
+      ResolutionPreset.high,
       enableAudio: false,
     );
 
@@ -71,11 +72,11 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _takePicture() async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
+    if (_controller == null || !_controller!.value.isInitialized || _isCapturing) return;
+
+    setState(() => _isCapturing = true);
 
     try {
-      // Final hard reset before capture to ensure NO flash fires
-      await _controller!.setFlashMode(FlashMode.off);
       final XFile image = await _controller!.takePicture();     
       
       if (!mounted) return;
@@ -89,6 +90,7 @@ class _CameraScreenState extends State<CameraScreen> {
       );
     } catch (e) {
       debugPrint('Error taking picture: $e');
+      if (mounted) setState(() => _isCapturing = false);
     }
   }
 
@@ -144,19 +146,21 @@ class _CameraScreenState extends State<CameraScreen> {
           left: 0,
           right: 0,
           child: Center(
-            child: GestureDetector(
-              onTap: _takePicture,
-              child: Container(
-                height: 80,
-                width: 80,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white24, width: 4),
-                ),
-                child: const Icon(Icons.camera_alt, color: Colors.black, size: 32),
-              ),
-            ),
+            child: _isCapturing 
+                ? const CircularProgressIndicator(color: Colors.white)
+                : GestureDetector(
+                    onTap: _takePicture,
+                    child: Container(
+                      height: 80,
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24, width: 4),
+                      ),
+                      child: const Icon(Icons.camera_alt, color: Colors.black, size: 32),
+                    ),
+                  ),
           ),
         ),
       ],
