@@ -12,12 +12,7 @@ List<CameraDescription> cameras = [];
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    cameras = await availableCameras();
-  } catch (e) {
-    debugPrint('Camera detection error: $e');
-    cameras = [];
-  }
+  
   final prefs = await SharedPreferences.getInstance();
   
   runApp(
