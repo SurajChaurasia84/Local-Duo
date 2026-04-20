@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_theme.dart';
-import 'map_tab.dart';
 import 'feed_tab.dart';
 import 'profile_tab.dart';
 import 'camera_screen.dart';
@@ -15,7 +14,7 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  int _currentIndex = 1; // Default to Home (Feed)
+  int _currentIndex = 0; // Default to Home (Feed)
 
   @override
   void initState() {
@@ -93,16 +92,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   final List<Widget> _tabs = [
-    const MapTab(),
     const FeedTab(),
     const ProfileTab(),
   ];
 
   String _getTitle() {
     switch (_currentIndex) {
-      case 0: return 'Map View';
-      case 1: return 'Community Feed';
-      case 2: return 'Profile';
+      case 0: return 'Community Feed';
+      case 1: return 'Profile';
       default: return '';
     }
   }
@@ -112,7 +109,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      appBar: _currentIndex != 2 // Hide AppBar on profile as it has its own header logic
+      appBar: _currentIndex != 1 // Hide AppBar on profile as it has its own header logic
         ? AppBar(
             title: Text(_getTitle()),
             backgroundColor: isDark ? Colors.black : Colors.white,
@@ -141,11 +138,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           showUnselectedLabels: false,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.map_outlined),
-              activeIcon: Icon(Icons.map),
-              label: 'Map',
-            ),
-            BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Home',
@@ -158,7 +150,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ],
         ),
       ),
-      floatingActionButton: _currentIndex == 1 // Only show on Feed page
+      floatingActionButton: _currentIndex == 0 // Only show on Feed page
           ? FloatingActionButton(
               onPressed: () => Navigator.push(
                 context,
