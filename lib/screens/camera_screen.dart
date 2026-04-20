@@ -95,12 +95,8 @@ class _CameraScreenState extends State<CameraScreen> {
                 );
               },
             ),
-            configs: ProImageEditorConfigs(
+            configs: const ProImageEditorConfigs(
               designMode: ImageEditorDesignMode.material,
-              cropRotateEditorConfigs: const CropRotateEditorConfigs(
-                initAspectRatio: 3 / 4,
-                canChangeAspectRatio: false, // Force 4:3 for standardized reports
-              ),
             ),
           ),
         ),
@@ -150,7 +146,7 @@ class _CameraScreenState extends State<CameraScreen> {
             color: Colors.black,
             child: Center(
               child: AspectRatio(
-                aspectRatio: 3 / 4, // 4:3 Portrait Viewfinder
+                aspectRatio: 1 / _controller!.value.aspectRatio,
                 child: CameraPreview(_controller!),
               ),
             ),
