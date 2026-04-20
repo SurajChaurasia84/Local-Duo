@@ -7,6 +7,8 @@ import '../providers/issue_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'privacy_policy_screen.dart';
 import 'feed_tab.dart';
 import 'my_reports_screen.dart';
@@ -124,6 +126,31 @@ class ProfileTab extends ConsumerWidget {
                       fontSize: 14,
                     ),
                   ),
+                ),
+
+                _settingsTile(
+                  context,
+                  Icons.share_outlined,
+                  'Share App',
+                  () => Share.share('Download Jan Report to report local issues! 🚀'),
+                ),
+
+                _settingsTile(
+                  context,
+                  Icons.help_outline_rounded,
+                  'Help & Support',
+                  () async {
+                    final Uri emailLaunchUri = Uri(
+                      scheme: 'mailto',
+                      path: 'support@janreport.com',
+                      queryParameters: {
+                        'subject': 'Jan Report - Support Request',
+                      },
+                    );
+                    if (await canLaunchUrl(emailLaunchUri)) {
+                      await launchUrl(emailLaunchUri);
+                    }
+                  },
                 ),
 
                 _settingsTile(
