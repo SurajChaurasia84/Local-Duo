@@ -1,18 +1,7 @@
 import 'package:uuid/uuid.dart';
 
-enum IssueCategory {
-  road('Road'),
-  garbage('Garbage'),
-  water('Water'),
-  safety('Safety');
-
-  final String label;
-  const IssueCategory(this.label);
-}
-
 class Issue {
   final String id;
-  final IssueCategory category;
   final String caption;
   final String imagePath;
   final String location;
@@ -25,7 +14,6 @@ class Issue {
 
   Issue({
     String? id,
-    required this.category,
     required this.caption,
     required this.imagePath,
     required this.location,
@@ -40,7 +28,6 @@ class Issue {
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'category': category.name,
     'caption': caption,
     'imagePath': imagePath,
     'location': location,
@@ -49,20 +36,21 @@ class Issue {
     'timestamp': timestamp.toIso8601String(),
   };
 
-  factory Issue.fromJson(Map<String, dynamic> json) => Issue(
-    id: json['report_id'] ?? json['id'],
-    category: IssueCategory.values.byName(json['category']),
-    caption: json['caption'] ?? json['description'] ?? '',
-    imagePath: json['image_url'] ?? json['imagePath'] ?? '',
-    location: json['address'] ?? json['location'] ?? '',
-    latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
-    longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-    timestamp: json['created_at'] != null 
-        ? DateTime.parse(json['created_at']) 
-        : (json['createdAt'] != null 
-            ? DateTime.parse(json['createdAt']) 
-            : (json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now())),
-    userName: json['user_name'],
-    userAvatar: json['user_avatar'],
-  );
+  factory Issue.fromJson(Map<String, dynamic> json) {
+    return Issue(
+      id: json['report_id'] ?? json['id'],
+      caption: json['caption'] ?? json['description'] ?? '',
+      imagePath: json['image_url'] ?? json['imagePath'] ?? '',
+      location: json['address'] ?? json['location'] ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      timestamp: json['created_at'] != null 
+          ? DateTime.parse(json['created_at']) 
+          : (json['createdAt'] != null 
+              ? DateTime.parse(json['createdAt']) 
+              : (json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now())),
+      userName: json['user_name'],
+      userAvatar: json['user_avatar'],
+    );
+  }
 }

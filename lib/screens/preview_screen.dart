@@ -27,7 +27,6 @@ class PreviewScreen extends ConsumerStatefulWidget {
 class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   final TextEditingController _captionController = TextEditingController();
   late String _currentImagePath;
-  IssueCategory _selectedCategory = IssueCategory.road;
   Position? _currentPosition;
   String _currentAddress = 'Fetching location...';
   bool _isFetchingLocation = true;
@@ -172,7 +171,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   Future<void> _submit() async {
     final issue = Issue(
       id: _reportId, 
-      category: _selectedCategory,
       caption: _captionController.text,
       imagePath: _currentImagePath, // Use edited path
       location: _currentAddress,
@@ -316,20 +314,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                     const SizedBox(height: 24),
 
                     const Text(
-                      'Select Category',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 12,
-                      children: IssueCategory.values.map((category) {
-                        final isSelected = _selectedCategory == category;
-                        return choiceChip(category, isSelected);
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 32),
-
-                    const Text(
                       'Description',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -408,20 +392,5 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     );
   }
 
-  Widget choiceChip(IssueCategory category, bool isSelected) {
-    return FilterChip(
-      label: Text(category.label),
-      selected: isSelected,
-      onSelected: (val) {
-        setState(() => _selectedCategory = category);
-      },
-      backgroundColor: Theme.of(context).cardTheme.color,
-      selectedColor: AppTheme.primaryColor,
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    );
   }
-}
+

@@ -85,7 +85,7 @@ class ApiService {
 
       // Add Fields
       request.fields['report_id'] = issue.id;
-      request.fields['category'] = issue.category.name;
+      request.fields['category'] = 'general';
       request.fields['description'] = issue.caption;
       request.fields['latitude'] = issue.latitude.toString();
       request.fields['longitude'] = issue.longitude.toString();
