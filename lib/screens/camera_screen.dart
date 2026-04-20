@@ -77,34 +77,14 @@ class _CameraScreenState extends State<CameraScreen> {
       // Final hard reset before capture to ensure NO flash fires
       await _controller!.setFlashMode(FlashMode.off);
       final XFile image = await _controller!.takePicture();     
+      
       if (!mounted) return;
 
-      Navigator.push(
+      // Go directly to PreviewScreen
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ProImageEditor.file(
-            File(image.path),
-            callbacks: ProImageEditorCallbacks(
-              onImageEditingComplete: (Uint8List bytes) async {
-                final tempDir = await getTemporaryDirectory();
-                final editedFile = File('${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.jpg');
-                await editedFile.writeAsBytes(bytes);
-                
-                if (!mounted) return;
-                
-                // Go to PreviewScreen with edited image
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PreviewScreen(imagePath: editedFile.path),
-                  ),
-                );
-              },
-            ),
-            configs: const ProImageEditorConfigs(
-              designMode: ImageEditorDesignMode.material,
-            ),
-          ),
+          builder: (context) => PreviewScreen(imagePath: image.path),
         ),
       );
     } catch (e) {

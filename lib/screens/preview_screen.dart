@@ -6,6 +6,9 @@ import 'package:geocoding/geocoding.dart';
 import '../models/issue.dart';
 import '../providers/issue_provider.dart';
 import '../theme/app_theme.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:typed_data';
 
 class PreviewScreen extends ConsumerStatefulWidget {
   final String imagePath;
@@ -23,6 +26,7 @@ class PreviewScreen extends ConsumerStatefulWidget {
 
 class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   final TextEditingController _captionController = TextEditingController();
+  late String _currentImagePath;
   IssueCategory _selectedCategory = IssueCategory.road;
   Position? _currentPosition;
   String _currentAddress = 'Fetching location...';
@@ -32,6 +36,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   @override
   void initState() {
     super.initState();
+    _currentImagePath = widget.imagePath;
     _fetchLocation();
   }
 
@@ -39,7 +44,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     if (city == null) return 'IND';
     final name = city.trim().toUpperCase();
     
-    // Comprehensive Indian City to Station Code Mapping
     final Map<String, String> stationCodes = {
       'DELHI': 'NDLS', 'NEW DELHI': 'NDLS', 'MUMBAI': 'CSTM', 'BOMBAY': 'CSTM',
       'KOLKATA': 'HWH', 'CALCUTTA': 'HWH', 'CHENNAI': 'MAS', 'MADRAS': 'MAS',
@@ -57,26 +61,16 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       'ALLAHABAD': 'PRYJ', 'GAYA': 'GAYA', 'DHANBAD': 'DHN', 'JHANSI': 'VGLJ',
     };
 
-    // Check the map for exact matches or partial matches
     for (var entry in stationCodes.entries) {
       if (name.contains(entry.key)) return entry.value;
     }
 
-    // Fallback: Smart Station-Code Generation (Consonants)
-    // E.g., CHANDIGARH -> CHN, MUMBAI -> MMB
     String code = name.replaceAll(RegExp(r'[AEIOU\s]'), '');
     if (code.length >= 3) return code.substring(0, 3);
     
     return name.length >= 3 ? name.substring(0, 3) : 'IND';
   }
 
-  String _generateRandomString(int length) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    return String.fromCharCodes(Iterable.generate(
-      length, (_) => chars.codeUnitAt(DateTime.now().microsecond % chars.length)));
-  }
-
-  // A more robust random string generator
   String _generateSecureRandomString(int length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = DateTime.now().microsecondsSinceEpoch;
@@ -94,11 +88,13 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
 
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        setState(() {
-          _currentAddress = 'Location services disabled';
-          _isFetchingLocation = false;
-          _reportId = 'IND-REP-ERROR';
-        });
+        if (mounted) {
+          setState(() {
+            _currentAddress = 'Location services disabled';
+            _isFetchingLocation = false;
+            _reportId = 'IND-REP-ERROR';
+          });
+        }
         return;
       }
 
@@ -106,11 +102,13 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          setState(() {
-            _currentAddress = 'Permission denied';
-            _isFetchingLocation = false;
-            _reportId = 'IND-REP-ERROR';
-          });
+          if (mounted) {
+            setState(() {
+              _currentAddress = 'Permission denied';
+              _isFetchingLocation = false;
+              _reportId = 'IND-REP-ERROR';
+            });
+          }
           return;
         }
       }
@@ -142,13 +140,41 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       }
     }
   }
+  
+  Future<void> _openEditor() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProImageEditor.file(
+          File(_currentImagePath),
+          callbacks: ProImageEditorCallbacks(
+            onImageEditingComplete: (Uint8List bytes) async {
+              final tempDir = await getTemporaryDirectory();
+              final editedFile = File('${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.jpg');
+              await editedFile.writeAsBytes(bytes);
+              
+              if (mounted) {
+                setState(() {
+                  _currentImagePath = editedFile.path;
+                });
+                Navigator.pop(context); // Go back to PreviewScreen
+              }
+            },
+          ),
+          configs: const ProImageEditorConfigs(
+            designMode: ImageEditorDesignMode.material,
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _submit() async {
     final issue = Issue(
-      id: _reportId, // Use the custom generated ID
+      id: _reportId, 
       category: _selectedCategory,
       caption: _captionController.text,
-      imagePath: widget.imagePath,
+      imagePath: _currentImagePath, // Use edited path
       location: _currentAddress,
       latitude: _currentPosition?.latitude ?? 0.0,
       longitude: _currentPosition?.longitude ?? 0.0,
@@ -164,7 +190,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      // Return to Home (MainScreen)
       Navigator.popUntil(context, (route) => route.isFirst);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -212,127 +237,141 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         }
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Report ID', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(
-              _reportId,
-              style: TextStyle(
-                fontSize: 13, 
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                fontWeight: FontWeight.normal,
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Report ID', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                _reportId,
+                style: TextStyle(
+                  fontSize: 13, 
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  fontWeight: FontWeight.normal,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Small Centered 16:9 Preview
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Center(
-                child: Container(
-                  width: 180,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Center(
+                  child: Container(
+                    width: 180,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        children: [
+                          widget.isMock 
+                            ? Image.network(_currentImagePath, width: 180, fit: BoxFit.contain)
+                            : Image.file(File(_currentImagePath), width: 180, fit: BoxFit.contain),
+                          Positioned(
+                            right: 8,
+                            bottom: 8,
+                            child: CircleAvatar(
+                              radius: 18,
+                              backgroundColor: Colors.black54,
+                              child: IconButton(
+                                icon: const Icon(Icons.edit, size: 16, color: Colors.white),
+                                onPressed: _openEditor,
+                                padding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: widget.isMock 
-                      ? Image.network(widget.imagePath, width: 180, fit: BoxFit.contain)
-                      : Image.file(File(widget.imagePath), width: 180, fit: BoxFit.contain),
+                    ),
                   ),
                 ),
               ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap: _isFetchingLocation ? null : _fetchLocation,
-                    borderRadius: BorderRadius.circular(12),
-                    child: _infoChip(
-                      Icons.location_on, 
-                      _currentAddress,
-                      isLoading: _isFetchingLocation,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Category Selector
-                  const Text(
-                    'Select Category',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    children: IssueCategory.values.map((category) {
-                      final isSelected = _selectedCategory == category;
-                      return choiceChip(category, isSelected);
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Caption Field
-                  const Text(
-                    'Description',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _captionController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: 'Describe the issue...',
-                      filled: true,
-                      fillColor: Theme.of(context).cardTheme.color,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
+              
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      onTap: _isFetchingLocation ? null : _fetchLocation,
+                      borderRadius: BorderRadius.circular(12),
+                      child: _infoChip(
+                        Icons.location_on, 
+                        _currentAddress,
+                        isLoading: _isFetchingLocation,
                       ),
-                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
                     ),
-                  ),
-                  const SizedBox(height: 100), // Space for sticky button
-                ],
+                    const SizedBox(height: 24),
+
+                    const Text(
+                      'Select Category',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 12,
+                      children: IssueCategory.values.map((category) {
+                        final isSelected = _selectedCategory == category;
+                        return choiceChip(category, isSelected);
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 32),
+
+                    const Text(
+                      'Description',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _captionController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'Describe the issue...',
+                        filled: true,
+                        fillColor: Theme.of(context).cardTheme.color,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                      ),
+                    ),
+                    const SizedBox(height: 100),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.black.withOpacity(0.4) : Colors.white.withOpacity(0.8),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        bottomSheet: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.black.withOpacity(0.4) : Colors.white.withOpacity(0.8),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: ElevatedButton(
+            onPressed: submissionState.isLoading ? null : _submit,
+            child: submissionState.isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Text('SUBMIT REPORT'),
+          ),
         ),
-        child: ElevatedButton(
-          onPressed: submissionState.isLoading ? null : _submit,
-          child: submissionState.isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : const Text('SUBMIT REPORT'),
-        ),
-      ),
       ),
     );
   }
