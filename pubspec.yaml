@@ -50,6 +50,7 @@ dependencies:
   http: ^1.2.1
   flutter_secure_storage: ^9.0.0
   pro_image_editor: ^12.0.0
+  image: ^4.2.0
 
 dev_dependencies:
   flutter_test:
