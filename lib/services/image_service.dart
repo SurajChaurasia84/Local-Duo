@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';

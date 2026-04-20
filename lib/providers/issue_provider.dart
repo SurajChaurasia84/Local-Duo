@@ -21,7 +21,6 @@ final issuesProvider = FutureProvider<List<Issue>>((ref) async {
     case IssueFilter.recent:
     case IssueFilter.mostLiked:
     case IssueFilter.all:
-    default:
       return apiService.getIssues();
   }
 });

@@ -30,7 +30,7 @@ class LoginScreen extends ConsumerWidget {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
                     blurRadius: 30,
                     spreadRadius: 5,
                   )
@@ -57,7 +57,7 @@ class LoginScreen extends ConsumerWidget {
               child: Text(
                 'Made for the people, by the people.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 15),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 15),
               ),
             ),
             const Spacer(),

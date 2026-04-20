@@ -89,7 +89,7 @@ class MyReportsScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.withOpacity(0.3)),
+          Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           const Text(
             'No reports found',
@@ -114,7 +114,7 @@ class MyReportsScreen extends ConsumerWidget {
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(isDark ? 0.2 : 0.05), blurRadius: 4)
+          BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05), blurRadius: 4)
         ],
       ),
       child: Row(
@@ -150,7 +150,7 @@ class MyReportsScreen extends ConsumerWidget {
                 ),
                 Text(
                   FeedTab.getTimeAgo(issue.timestamp),
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 12),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12),
                 ),
               ],
             ),
@@ -166,7 +166,7 @@ class MyReportsScreen extends ConsumerWidget {
 
   Widget _imageErrorPlaceholder() {
     return Container(
-      color: Colors.grey.withOpacity(0.1),
+      color: Colors.grey.withValues(alpha: 0.1),
       child: const Center(
         child: Icon(Icons.broken_image_outlined, color: Colors.grey, size: 20),
       ),

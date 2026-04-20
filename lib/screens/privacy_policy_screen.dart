@@ -40,7 +40,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               child: Text(
                 'Last Updated: April 18, 2026',
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3), 
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3), 
                   fontSize: 12,
                 ),
               ),
@@ -69,7 +69,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           Text(
             content,
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), 
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), 
               height: 1.5,
             ),
           ),

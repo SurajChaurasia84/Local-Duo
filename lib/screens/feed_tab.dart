@@ -68,7 +68,7 @@ class _IssueFeedCard extends StatelessWidget {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                   backgroundImage: issue.userAvatar != null ? NetworkImage(issue.userAvatar!) : null,
                   child: issue.userAvatar == null 
                     ? const Icon(Icons.person, color: AppTheme.primaryColor)
@@ -84,7 +84,7 @@ class _IssueFeedCard extends StatelessWidget {
                     ),
                     Text(
                       FeedTab.getTimeAgo(issue.timestamp), 
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 12)
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)
                     ),
                   ],
                 ),
@@ -95,7 +95,7 @@ class _IssueFeedCard extends StatelessWidget {
           // Image
           ClipRRect(
             borderRadius: BorderRadius.circular(0),
-            child: Container(
+            child: SizedBox(
               width: double.infinity,
               child: (issue.isMock || issue.imagePath.startsWith('http'))
                 ? Image.network(
@@ -126,11 +126,11 @@ class _IssueFeedCard extends StatelessWidget {
                 const SizedBox(height: 8), // Reduced gap
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+                    Icon(Icons.location_on, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
                     const SizedBox(width: 4),
                     Text(
                       issue.location,
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4), fontSize: 12),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12),
                     ),
                   ],
                 ),
@@ -143,7 +143,7 @@ class _IssueFeedCard extends StatelessWidget {
 
   Widget _imageErrorPlaceholder() {
     return Container(
-      color: Colors.grey.withOpacity(0.1),
+      color: Colors.grey.withValues(alpha: 0.1),
       child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
 
 class ConnectivityService {
   static const String _healthUrl = 'http://localhost:5000/health';

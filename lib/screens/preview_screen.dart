@@ -5,11 +5,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../models/issue.dart';
 import '../providers/issue_provider.dart';
-import '../theme/app_theme.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
-import 'feed_tab.dart';
 
 class PreviewScreen extends ConsumerStatefulWidget {
   final String imagePath;
@@ -162,7 +160,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                 setState(() {
                   _currentImagePath = editedFile.path;
                 });
-                Navigator.pop(context); // Go back to PreviewScreen
+                if (context.mounted) Navigator.pop(context); // Go back to PreviewScreen
               }
             },
           ),
@@ -282,7 +280,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                 _reportId,
                 style: TextStyle(
                   fontSize: 13, 
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                   fontWeight: FontWeight.normal,
                 ),
               ),
@@ -302,7 +300,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -373,7 +371,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
                         ),
-                        hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                        hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
                       ),
                     ),
                     const SizedBox(height: 100),
@@ -386,7 +384,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         bottomSheet: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isDark ? Colors.black.withOpacity(0.4) : Colors.white.withOpacity(0.8),
+            color: isDark ? Colors.black.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.8),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: ElevatedButton(
@@ -421,14 +419,14 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           else
-            Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+            Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               label, 
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 13),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 13),
             ),
           ),
         ],

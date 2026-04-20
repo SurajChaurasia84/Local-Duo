@@ -1,16 +1,11 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shimmer/shimmer.dart';
-import '../models/issue.dart';
-import '../providers/issue_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'privacy_policy_screen.dart';
-import 'feed_tab.dart';
 import 'my_reports_screen.dart';
 
 class ProfileTab extends ConsumerWidget {
@@ -18,11 +13,9 @@ class ProfileTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userIssuesAsync = ref.watch(userIssuesProvider);
     final themeMode = ref.watch(themeProvider);
     final authState = ref.watch(authProvider);
     final user = authState.user;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final userName = user?['name'] ?? 'User';
     final userEmail = user?['email'] ?? '';
@@ -132,8 +125,10 @@ class ProfileTab extends ConsumerWidget {
                   context,
                   Icons.share_outlined,
                   'Share App',
-                  () => Share.share(
-                    'Hey! Check out Jan Report - An easy way to report community issues. \n\nDownload now: https://play.google.com/store/apps/details?id=com.janreport.community 🚀'
+                  () => SharePlus.instance.share(
+                    ShareParams(
+                      text: 'Hey! Check out Jan Report - An easy way to report community issues. \n\nDownload now: https://play.google.com/store/apps/details?id=com.janreport.community 🚀'
+                    ),
                   ),
                 ),
 
@@ -249,15 +244,6 @@ class ProfileTab extends ConsumerWidget {
         ),
       ),
       trailing: trailing ?? Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2)),
-    );
-  }
-
-  Widget _imageErrorPlaceholder() {
-    return Container(
-      color: Colors.grey.withValues(alpha: 0.1),
-      child: const Center(
-        child: Icon(Icons.broken_image_outlined, color: Colors.grey, size: 20),
-      ),
     );
   }
 }
